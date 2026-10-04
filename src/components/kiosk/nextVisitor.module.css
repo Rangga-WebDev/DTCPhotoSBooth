@@ -1,0 +1,62 @@
+/** @format */
+
+.root {
+  display: grid;
+  gap: var(--dtc-space-3);
+  padding-top: var(--dtc-space-5);
+  border-top: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.title {
+  font-family: var(--dtc-font-display);
+  font-size: clamp(1.75rem, 2.4vw, 2.5rem);
+  font-weight: 800;
+  font-stretch: 72%;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  word-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.text {
+  color: color-mix(in srgb, var(--dtc-fg) 74%, transparent);
+  font-size: var(--dtc-text-small);
+  line-height: 1.5;
+}
+
+.warning {
+  padding: var(--dtc-space-3) var(--dtc-space-4);
+  border-left: 2px solid var(--dtc-accent);
+  background: color-mix(in srgb, var(--dtc-accent) 10%, transparent);
+  font-size: var(--dtc-text-small);
+}
+
+.confirm {
+  display: grid;
+  gap: var(--dtc-space-3);
+  padding: var(--dtc-space-4);
+  border: var(--dtc-hairline) solid var(--dtc-fg);
+}
+
+.confirmTitle {
+  font-family: var(--dtc-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-stretch: 88%;
+  text-transform: uppercase;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dtc-space-3);
+}
+
+.actions > :global(.dtc-btn) {
+  justify-content: center;
+}
+
+.error {
+  color: var(--dtc-signal);
+  font-size: var(--dtc-text-small);
+}

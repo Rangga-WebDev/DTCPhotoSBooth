@@ -1,0 +1,154 @@
+/* TEKNIK FEST / STAGE 04 — INDUSTRIAL EDITORIAL DOWNLOAD
+   Isolated selectors: the camera, editor and old globals remain untouched. */
+.tf-download-page {
+  --tf-d-black: #0b0b0d;
+  --tf-d-charcoal: #19191c;
+  --tf-d-red: #d71920;
+  --tf-d-paper: #f0ede6;
+  --tf-d-steel: #858589;
+  --tf-d-display: "Barlow Condensed", Impact, "Arial Narrow", sans-serif;
+  --tf-d-body: "Instrument Sans", Arial, sans-serif;
+  --tf-d-mono: "IBM Plex Mono", Consolas, monospace;
+  min-height: 100svh;
+  width: 100%;
+  overflow-x: clip;
+  background: var(--tf-d-black);
+  color: var(--tf-d-paper);
+  font-family: var(--tf-d-body);
+  -webkit-font-smoothing: antialiased;
+}
+.tf-download-page *, .tf-download-page *::before, .tf-download-page *::after { box-sizing: border-box; }
+.tf-download-page a { color: inherit; text-decoration: none; }
+.tf-download-page :focus-visible { outline: 3px solid #f04438; outline-offset: 5px; }
+.tf-download-page em { color: var(--tf-d-red); font-style: normal; }
+.tf-download-page ::selection { background: var(--tf-d-red); color: white; }
+.tf-download-skip { position: absolute; left: 20px; top: -100px; z-index: 10000; background: var(--tf-d-paper); color: #0b0b0d !important; padding: 12px; }
+.tf-download-skip:focus { top: 8px; }
+
+/* /01 — navigation */
+.tf-download-nav { min-height: 76px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; border-top: 4px solid var(--tf-d-red); border-bottom: 1px solid #4a4a4d; }
+.tf-download-brand { display: flex; align-items: center; gap: 11px; padding: 15px clamp(18px,4vw,65px); }
+.tf-download-brand-mark { width: 39px; height: 39px; flex: none; display: flex; justify-content: center; align-items: center; position: relative; border: 2px solid var(--tf-d-red); font: 900 25px/.9 var(--tf-d-display); letter-spacing: -.08em; }
+.tf-download-brand-mark span { position: absolute; bottom: 1px; right: 1px; font: 600 7px/1 var(--tf-d-mono); color: var(--tf-d-red); letter-spacing: 0; }
+.tf-download-brand-name { font: 900 22px/.72 var(--tf-d-display); letter-spacing: .02em; }
+.tf-download-punct { color: var(--tf-d-red); }
+.tf-download-nav-center, .tf-download-nav-status { align-self: center; font: 600 10px/1.5 var(--tf-d-mono); letter-spacing: .04em; }
+.tf-download-nav-center { color: #aaa9a7; text-align: center; }
+.tf-download-nav-status { justify-self: end; padding: 0 clamp(18px,4vw,65px); display: flex; align-items: center; gap: 10px; }
+.tf-download-status-dot { width: 7px; height: 7px; flex: none; background: var(--tf-d-red); display: inline-block; }
+
+/* /02 — editorial headline */
+.tf-download-heading { padding: clamp(26px,4vw,52px) clamp(18px,4vw,65px) 35px; border-bottom: 1px solid #454547; }
+.tf-download-heading-top, .tf-download-heading-bottom { display: flex; align-items: center; justify-content: space-between; gap: 25px; font: 600 10px/1.5 var(--tf-d-mono); letter-spacing: .07em; }
+.tf-download-heading-top { color: #a6a5a4; }
+.tf-download-heading h1 { margin: 21px 0 22px; max-width: 1600px; white-space: nowrap; font: 900 clamp(74px,14vw,220px)/.75 var(--tf-d-display); letter-spacing: -.045em; }
+.tf-download-heading-bottom { border-top: 1px solid #454547; padding-top: 19px; }
+.tf-download-heading-bottom p { max-width: 410px; margin: 0; color: #c7c3bd; font: 400 14px/1.65 var(--tf-d-body); letter-spacing: 0; }
+.tf-download-heading-bottom > span { color: var(--tf-d-red); white-space: nowrap; }
+
+/* /03 — two-axis photo and delivery */
+.tf-download-workspace { display: grid; grid-template-columns: minmax(0, 1.13fr) minmax(350px, .87fr); align-items: stretch; border-bottom: 1px solid #454547; }
+.tf-download-preview { min-width: 0; background: #212123; padding: clamp(19px,3.6vw,55px); border-right: 1px solid #454547; }
+.tf-download-preview-bar, .tf-download-preview-foot { display: flex; justify-content: space-between; gap: 12px; color: #bbb9b5; font: 600 10px/1.6 var(--tf-d-mono); letter-spacing: .04em; }
+.tf-download-preview-bar { padding-bottom: 21px; border-bottom: 1px solid #575759; }
+.tf-download-preview-bar > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
+.tf-download-preview-bar i { width: 7px; height: 7px; background: var(--tf-d-red); display: inline-block; }
+.tf-download-print { position: relative; width: 100%; min-height: 310px; margin: 26px auto; padding: clamp(12px,2vw,26px); display: flex; justify-content: center; align-items: center; background: #111113; }
+.tf-download-image { display: block; width: auto; max-width: 100%; height: auto; max-height: 790px; object-fit: contain; background: var(--tf-d-paper); }
+.tf-download-crop { position: absolute; width: 22px; height: 22px; pointer-events: none; }
+.tf-download-crop-tl { top: 5px; left: 5px; border-top: 1px solid #a6a5a0; border-left: 1px solid #a6a5a0; }
+.tf-download-crop-tr { top: 5px; right: 5px; border-top: 1px solid #a6a5a0; border-right: 1px solid #a6a5a0; }
+.tf-download-crop-bl { bottom: 5px; left: 5px; border-bottom: 1px solid #a6a5a0; border-left: 1px solid #a6a5a0; }
+.tf-download-crop-br { bottom: 5px; right: 5px; border-bottom: 1px solid #a6a5a0; border-right: 1px solid #a6a5a0; }
+.tf-download-preview-foot { padding-top: 16px; border-top: 1px solid #575759; }
+.tf-download-delivery { min-width: 0; display: flex; flex-direction: column; padding: clamp(24px,4vw,64px); background: var(--tf-d-black); }
+.tf-download-delivery-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 19px; border-bottom: 1px solid #454547; font: 600 10px/1.5 var(--tf-d-mono); color: #b9b6b0; }
+.tf-download-ready { display: flex; align-items: center; gap: 13px; margin-top: clamp(36px,5vw,78px); color: #bdbbb7; font: 500 10px/1.5 var(--tf-d-mono); letter-spacing: .035em; }
+.tf-download-ready-marker { width: 36px; height: 36px; display: grid; place-items: center; flex: none; background: var(--tf-d-red); color: #fff; font: 900 23px/1 var(--tf-d-display); }
+.tf-download-ready strong { color: var(--tf-d-paper); font-weight: 600; }
+.tf-download-delivery h2 { margin: 26px 0 18px; font: 900 clamp(65px,7.5vw,125px)/.77 var(--tf-d-display); letter-spacing: -.025em; }
+.tf-download-description { max-width: 350px; color: #c0bcb7; font: 400 14px/1.75 var(--tf-d-body); }
+.tf-download-primary { min-height: 76px; margin-top: 30px; padding: 0 23px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--tf-d-red); color: #fff !important; font: 700 12px/1.3 var(--tf-d-mono); letter-spacing: .02em; transition: background .2s ease; }
+.tf-download-primary:hover { background: #f04438; }
+.tf-download-primary-arrow { font: 900 32px/.8 var(--tf-d-display); }
+.tf-download-secondary { padding: 22px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #454547; font: 600 11px/1.5 var(--tf-d-mono); color: #dfdcd6 !important; }
+.tf-download-secondary:hover { color: #f04438 !important; }
+.tf-download-secondary span { font-size: 20px; }
+.tf-download-help { padding: 28px 0; border-bottom: 1px solid #454547; }
+.tf-download-help strong { font: 600 11px/1.4 var(--tf-d-mono); letter-spacing: .04em; }
+.tf-download-help p { margin: 8px 0 0; font: 400 13px/1.75 var(--tf-d-body); color: #bdbab6; }
+.tf-download-help p b { color: var(--tf-d-paper); font-weight: 600; }
+.tf-download-metadata { display: grid; grid-template-columns: 1.2fr .6fr 1fr; gap: 12px; margin-top: auto; padding-top: 35px; }
+.tf-download-metadata div { display: flex; flex-direction: column; gap: 10px; }
+.tf-download-metadata span { color: #939293; font: 500 9px/1.5 var(--tf-d-mono); letter-spacing: .04em; }
+.tf-download-metadata strong { overflow-wrap: anywhere; font: 600 12px/1.4 var(--tf-d-mono); }
+
+/* /04 — graphic conclusion */
+.tf-download-outro { min-height: 300px; position: relative; overflow: hidden; background: var(--tf-d-red); color: var(--tf-d-black); padding: clamp(30px,4vw,60px) clamp(18px,4vw,65px); display: flex; align-items: end; justify-content: space-between; gap: 25px; }
+.tf-download-outro > div { position: relative; z-index: 1; }
+.tf-download-outro > div > span { font: 700 11px/1 var(--tf-d-mono); letter-spacing: .045em; }
+.tf-download-outro h2 { margin: 23px 0 0; font: 900 clamp(58px,9vw,150px)/.75 var(--tf-d-display); letter-spacing: -.03em; }
+.tf-download-outro h2 em { color: var(--tf-d-paper); }
+.tf-download-outro p { position: relative; z-index: 1; max-width: 235px; margin: 0 20px 12px 0; font: 600 13px/1.7 var(--tf-d-body); }
+.tf-download-outro-star { position: absolute; right: 15%; bottom: -125px; font: 900 400px/1 var(--tf-d-display); color: #0b0b0d15; pointer-events: none; }
+.tf-download-footer { min-height: 90px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 25px clamp(18px,4vw,65px); font: 600 10px/1.5 var(--tf-d-mono); color: #a5a2a0; }
+
+/* /05 — missing file */
+.tf-download-missing { min-height: calc(100svh - 170px); display: grid; grid-template-columns: minmax(0,.75fr) minmax(0,1.25fr); border-bottom: 1px solid #454547; }
+.tf-download-missing-code { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 30px; background: var(--tf-d-red); font: 900 clamp(140px,22vw,340px)/.85 var(--tf-d-display); letter-spacing: -.07em; }
+.tf-download-missing-code span { align-self: end; margin-top: 16px; font: 600 13px/1 var(--tf-d-mono); letter-spacing: .03em; }
+.tf-download-missing-copy { padding: clamp(40px,6vw,90px); display: flex; flex-direction: column; align-items: start; justify-content: center; }
+.tf-download-kicker { color: #bbb7b4; font: 600 10px/1.5 var(--tf-d-mono); letter-spacing: .04em; }
+.tf-download-kicker span { color: var(--tf-d-red); }
+.tf-download-missing-copy h1 { margin: 20px 0; font: 900 clamp(66px,8.5vw,135px)/.82 var(--tf-d-display); letter-spacing: -.02em; }
+.tf-download-missing-copy > p:not(.tf-download-kicker) { max-width: 440px; color: #cac7c0; font: 400 14px/1.85 var(--tf-d-body); }
+.tf-download-missing-meta { display: flex; flex-direction: column; gap: 6px; margin-top: 30px; color: #a39e9e; font: 500 10px/1.5 var(--tf-d-mono); }
+.tf-download-missing-meta strong { color: var(--tf-d-paper); font: 600 12px/1.5 var(--tf-d-mono); }
+.tf-download-missing-link { margin-top: 30px; min-width: 230px; display: flex; justify-content: space-between; gap: 16px; padding: 19px; background: var(--tf-d-red); color: white !important; font: 600 12px/1.4 var(--tf-d-mono); }
+
+/* /06 — intentional mobile recomposition */
+@media (max-width: 1050px) {
+  .tf-download-heading h1 { font-size: clamp(68px,12vw,142px); }
+  .tf-download-workspace { grid-template-columns: minmax(0,1fr) minmax(330px,.95fr); }
+  .tf-download-delivery h2 { font-size: clamp(65px,8vw,100px); }
+}
+@media (max-width: 760px) {
+  .tf-download-nav { grid-template-columns: 1fr auto; min-height: 70px; }
+  .tf-download-nav-center { display: none; }
+  .tf-download-nav-status { font-size: 9px; }
+  .tf-download-heading { padding-top: 34px; padding-bottom: 26px; }
+  .tf-download-heading-top > span:last-child { display: none; }
+  .tf-download-heading h1 { margin: 22px 0 26px; white-space: normal; font-size: clamp(75px,16.5vw,125px); line-height: .77; }
+  .tf-download-heading h1 em { display: block; }
+  .tf-download-heading-bottom > span { display: none; }
+  .tf-download-workspace { display: flex; flex-direction: column; }
+  .tf-download-preview { border-right: 0; border-bottom: 1px solid #454547; padding: 17px 18px 23px; }
+  .tf-download-print { min-height: 230px; margin: 18px auto; padding: 13px; }
+  .tf-download-image { max-height: 66svh; }
+  .tf-download-delivery { padding: 32px 20px 39px; }
+  .tf-download-ready { margin-top: 14px; }
+  .tf-download-delivery h2 { font-size: clamp(74px,15.5vw,115px); margin-top: 23px; }
+  .tf-download-description { margin-bottom: 0; }
+  .tf-download-primary { margin-top: 24px; min-height: 76px; }
+  .tf-download-metadata { margin-top: 0; padding-top: 27px; }
+  .tf-download-outro { min-height: 270px; flex-direction: column; align-items: start; }
+  .tf-download-outro h2 { font-size: clamp(75px,15vw,120px); }
+  .tf-download-outro p { max-width: 350px; margin: 0; }
+  .tf-download-footer { align-items: start; flex-direction: column; min-height: 74px; gap: 9px; }
+  .tf-download-missing { grid-template-columns: 1fr; }
+  .tf-download-missing-code { min-height: 230px; font-size: clamp(170px,42vw,260px); }
+  .tf-download-missing-copy { padding: 38px 22px 60px; }
+  .tf-download-missing-copy h1 { font-size: clamp(68px,14vw,110px); }
+}
+@media (max-width: 410px) {
+  .tf-download-nav-status { max-width: 140px; }
+  .tf-download-heading h1 { font-size: clamp(66px,16vw,82px); }
+  .tf-download-preview-bar, .tf-download-preview-foot { font-size: 8px; }
+  .tf-download-delivery h2 { font-size: 74px; }
+  .tf-download-metadata { grid-template-columns: 1fr 1fr; }
+  .tf-download-metadata div:last-child { grid-column: 1 / -1; }
+  .tf-download-missing-code { font-size: 165px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tf-download-page *, .tf-download-page *::before, .tf-download-page *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

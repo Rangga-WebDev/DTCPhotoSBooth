@@ -1,0 +1,324 @@
+/** @format */
+
+/* =============================================================
+   DOWNLOAD · halaman HP pengunjung
+   Mobile-first: hero → photocard di tray ink → aksi → spesifikasi.
+   Desktop: tray kiri, aksi kanan. Expired: permukaan ink + slot kosong.
+   ============================================================= */
+
+.page {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  min-height: 100svh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dtc-space-3);
+  min-height: 60px;
+  padding-inline: var(--dtc-margin);
+  border-bottom: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.8125rem;
+}
+
+.hero {
+  display: grid;
+  gap: var(--dtc-space-3);
+  padding: var(--dtc-space-6) var(--dtc-margin) var(--dtc-space-5);
+}
+
+.title,
+.expiredTitle {
+  font-family: var(--dtc-font-display);
+  font-weight: 800;
+  font-stretch: 66%;
+  line-height: 0.86;
+  letter-spacing: -0.03em;
+  word-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(3.25rem, 17vw, 7.5rem);
+}
+
+.lead {
+  max-width: 44ch;
+  color: color-mix(in srgb, var(--dtc-fg) 76%, transparent);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.layout {
+  display: grid;
+  align-content: start;
+}
+
+/* ---------- TRAY PHOTOCARD ---------- */
+
+.tray {
+  display: grid;
+  gap: var(--dtc-space-3);
+  margin: 0;
+  padding: var(--dtc-space-5) var(--dtc-margin) var(--dtc-space-3);
+  background-color: var(--dtc-navy);
+  background-image: radial-gradient(
+    circle,
+    rgba(247, 249, 251, 0.14) 1px,
+    transparent 1.5px
+  );
+  background-size: 24px 24px;
+  background-position: center;
+}
+
+.print {
+  display: grid;
+  place-items: center;
+}
+
+.image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 74svh;
+  background: var(--dtc-paper);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.3),
+    0 30px 60px -30px rgba(0, 0, 0, 0.95);
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--dtc-space-3);
+  color: var(--dtc-fg-meta);
+  font: 500 var(--dtc-text-micro) / 1.3 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- AKSI ---------- */
+
+/* Menempel di bawah layar HP selama photocard masih terlihat di atasnya */
+.saveBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  gap: var(--dtc-space-2);
+  padding: var(--dtc-space-3) var(--dtc-margin);
+  border-top: var(--dtc-hairline) solid var(--dtc-rule);
+  background: color-mix(in srgb, var(--dtc-paper) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.more {
+  display: grid;
+  gap: var(--dtc-space-4);
+  padding: var(--dtc-space-4) var(--dtc-margin) 0;
+}
+
+.side {
+  display: grid;
+  align-content: start;
+  gap: var(--dtc-space-5);
+  padding: var(--dtc-space-5) var(--dtc-margin) var(--dtc-space-7);
+}
+
+.textLink {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  min-height: var(--dtc-tap);
+  color: var(--dtc-fg);
+  font: 500 var(--dtc-text-meta) / 1 var(--dtc-font-mono);
+  letter-spacing: 0.08em;
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+  text-transform: uppercase;
+}
+
+.tips {
+  display: grid;
+  gap: var(--dtc-space-3);
+  padding: var(--dtc-space-4);
+  border: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.tips p {
+  color: color-mix(in srgb, var(--dtc-fg) 80%, transparent);
+  font-size: var(--dtc-text-small);
+  line-height: 1.5;
+}
+
+.tips strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--dtc-fg);
+  font: 600 var(--dtc-text-micro) / 1.3 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.error {
+  color: var(--dtc-signal);
+  font-size: var(--dtc-text-small);
+}
+
+.expiredNote {
+  padding: var(--dtc-space-4);
+  border-left: 2px solid var(--dtc-signal);
+  background: color-mix(in srgb, var(--dtc-signal) 8%, transparent);
+  font-size: var(--dtc-text-small);
+  line-height: 1.5;
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.specs div {
+  display: grid;
+  gap: 2px;
+  padding: var(--dtc-space-3) var(--dtc-space-2) var(--dtc-space-3) 0;
+  border-bottom: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.specs dt {
+  color: var(--dtc-fg-meta);
+  font: 500 var(--dtc-text-micro) / 1.2 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.specs dd {
+  font: 600 var(--dtc-text-small) / 1.35 var(--dtc-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.privacy {
+  color: var(--dtc-fg-meta);
+  font-size: var(--dtc-text-meta);
+  line-height: 1.5;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--dtc-space-2) var(--dtc-space-4);
+  padding: var(--dtc-space-5) var(--dtc-margin);
+  border-top: var(--dtc-hairline) solid var(--dtc-rule);
+  color: var(--dtc-fg-meta);
+  font: 500 var(--dtc-text-micro) / 1.4 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- EXPIRED ---------- */
+
+.expired {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: var(--dtc-space-4);
+  padding: var(--dtc-space-7) var(--dtc-margin);
+}
+
+.void {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--dtc-space-2);
+  width: min(200px, 56vw);
+  aspect-ratio: 3 / 4;
+  margin-bottom: var(--dtc-space-4);
+  border: var(--dtc-stroke) dashed rgba(247, 249, 251, 0.32);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(247, 249, 251, 0.07) 0 1px,
+    transparent 1px 10px
+  );
+  color: var(--dtc-fg-meta);
+  font: 500 var(--dtc-text-micro) / 1.3 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.void span:first-child {
+  color: var(--dtc-fg);
+  font-size: var(--dtc-text-meta);
+}
+
+.expiredTitle {
+  max-width: 11ch;
+  font-size: clamp(3.25rem, 15vw, 8.5rem);
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    padding-top: var(--dtc-space-7);
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    border-top: var(--dtc-hairline) solid var(--dtc-rule);
+  }
+
+  .tray {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    align-content: center;
+    min-height: 78svh;
+    padding: var(--dtc-space-7);
+  }
+
+  .image {
+    max-height: 72svh;
+  }
+
+  .saveBar,
+  .more,
+  .side {
+    grid-column: 2;
+    padding-right: var(--dtc-margin);
+    padding-left: var(--dtc-space-7);
+  }
+
+  .saveBar {
+    position: static;
+    padding-top: var(--dtc-space-7);
+    padding-bottom: 0;
+    border-top: 0;
+    background: none;
+    backdrop-filter: none;
+  }
+
+  .side {
+    padding-top: var(--dtc-space-6);
+  }
+
+  .expired {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--dtc-space-8);
+    align-items: center;
+  }
+
+  .void {
+    grid-row: 1 / span 4;
+    width: 240px;
+    margin-bottom: 0;
+  }
+}

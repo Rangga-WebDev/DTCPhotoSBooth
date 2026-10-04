@@ -1,5 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+
+# Teknik Fest visitor photos
+/storage/photos/*
+!/storage/photos/.gitkeep
+
+# MediaPipe wasm, disalin otomatis oleh scripts/copy-mediapipe-wasm.mjs
+/public/mediapipe/
+
 # dependencies
 /node_modules
 /.pnp

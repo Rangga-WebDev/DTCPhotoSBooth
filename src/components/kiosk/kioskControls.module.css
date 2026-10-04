@@ -1,0 +1,53 @@
+/** @format */
+
+/* Tombol operator: layar penuh + wake lock (hanya di layar awal kiosk) */
+
+.root {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 90;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  max-width: 300px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--dtc-tap);
+  padding: 0 16px;
+  border: var(--dtc-hairline) solid rgba(247, 249, 251, 0.28);
+  background: color-mix(in srgb, var(--dtc-ink) 88%, transparent);
+  color: var(--dtc-paper);
+  font: 500 var(--dtc-text-micro) / 1 var(--dtc-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  transition: border-color var(--dtc-dur-2) var(--dtc-ease);
+}
+
+.button:hover {
+  border-color: var(--dtc-cyan);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--dtc-cyan);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.message {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 2px solid var(--dtc-signal);
+  background: var(--dtc-ink);
+  color: var(--dtc-paper);
+  font: 400 var(--dtc-text-micro) / 1.5 var(--dtc-font-body);
+}

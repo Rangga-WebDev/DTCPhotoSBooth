@@ -1,0 +1,77 @@
+/** @format */
+
+/* Panel cek perangkat untuk operator (inspector booth, permukaan ink) */
+
+.root {
+  border: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dtc-space-3);
+  width: 100%;
+  min-height: var(--dtc-tap);
+  padding: 0 var(--dtc-space-3);
+  border: 0;
+  background: transparent;
+  color: var(--dtc-fg);
+  font: 600 var(--dtc-text-micro) / 1 var(--dtc-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toggle > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dtc-space-2);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: var(--dtc-grey-muted);
+}
+
+.dot[data-ready] {
+  background: var(--dtc-cyan);
+}
+
+.details {
+  display: grid;
+  gap: var(--dtc-space-2);
+  padding: 0 var(--dtc-space-3) var(--dtc-space-3);
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--dtc-space-3);
+  padding: var(--dtc-space-2) var(--dtc-space-3);
+  background: rgba(247, 249, 251, 0.04);
+}
+
+.item > span {
+  flex: 1;
+  font-size: var(--dtc-text-small);
+}
+
+.item strong {
+  color: var(--dtc-cyan);
+  font: 600 var(--dtc-text-micro) / 1.2 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+}
+
+.item small {
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.item small,
+.note {
+  color: var(--dtc-fg-meta);
+  font-size: var(--dtc-text-micro);
+  line-height: 1.5;
+}

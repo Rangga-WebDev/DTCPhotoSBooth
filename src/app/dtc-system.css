@@ -1,0 +1,1207 @@
+/**
+ * =============================================================
+ *    DTCBOOTH DESIGN SYSTEM · v1.0
+ *    DTC 2026 — Discovery Technology Creative
+ *    Palette sampled from public/logo/logoDTC.jpeg.
+ *    Everything is prefixed dtc- so legacy tf- pages keep working
+ *    until each page is migrated.
+ *    =============================================================
+ *
+ * @format
+ */
+
+:root {
+  /* Brand: logo body #0060F0 → primary, highlight #00A8FC–#00C0FC → electric/cyan */
+  --dtc-blue: #0878ed;
+  --dtc-blue-electric: #009ef7;
+  --dtc-cyan: #12c8f4;
+  --dtc-blue-deep: #054bae;
+  --dtc-navy: #07152b;
+  --dtc-ink: #050a12;
+  --dtc-paper: #f7f9fb;
+  --dtc-white: #ffffff;
+  --dtc-grey: #dce3ea;
+  --dtc-grey-muted: #8d99a6;
+  --dtc-grey-text: #5b6776;
+  --dtc-logo-bg: #f7f7f7;
+  --dtc-signal: #e5484d;
+
+  --dtc-font-display:
+    "Archivo Variable", "Archivo", "Arial Narrow", Arial, sans-serif;
+  --dtc-font-body: "Instrument Sans", "Segoe UI", Arial, sans-serif;
+  --dtc-font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+
+  --dtc-text-hero: clamp(6rem, 19vw, 23rem);
+  --dtc-text-display: clamp(4rem, 11vw, 12rem);
+  --dtc-text-h1: clamp(3rem, 6.5vw, 7rem);
+  --dtc-text-h2: clamp(2.25rem, 4.2vw, 4.5rem);
+  --dtc-text-h3: clamp(1.5rem, 2.2vw, 2.25rem);
+  --dtc-text-lead: clamp(1.125rem, 1.35vw, 1.375rem);
+  --dtc-text-body: 1rem;
+  --dtc-text-small: 0.875rem;
+  --dtc-text-meta: 0.75rem;
+  --dtc-text-micro: 0.6875rem;
+
+  --dtc-cols: 4;
+  --dtc-margin: clamp(1rem, 4vw, 4.5rem);
+  --dtc-gutter: clamp(0.75rem, 1.6vw, 1.75rem);
+  --dtc-section: clamp(4.5rem, 10vw, 11rem);
+  --dtc-space-1: 0.25rem;
+  --dtc-space-2: 0.5rem;
+  --dtc-space-3: 0.75rem;
+  --dtc-space-4: 1rem;
+  --dtc-space-5: 1.5rem;
+  --dtc-space-6: 2rem;
+  --dtc-space-7: 3rem;
+  --dtc-space-8: 4.5rem;
+  --dtc-space-9: 7rem;
+
+  --dtc-hairline: 1px;
+  --dtc-stroke: 1.5px;
+  --dtc-radius: 0;
+  --dtc-radius-soft: 2px;
+  --dtc-tap: 44px;
+  --dtc-shadow-print:
+    0 1px 0 rgba(5, 10, 18, 0.06), 0 26px 50px -30px rgba(5, 10, 18, 0.55);
+
+  --dtc-dur-1: 150ms;
+  --dtc-dur-2: 240ms;
+  --dtc-dur-3: 400ms;
+  --dtc-dur-4: 600ms;
+  --dtc-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --dtc-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dtc-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --dtc-z-overlay: 60;
+  --dtc-z-shutter: 100;
+  --dtc-header-h: 64px;
+
+  --dtc-arrow-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 12h18M13 5l7 7-7 7' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+@media (min-width: 640px) {
+  :root {
+    --dtc-cols: 8;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --dtc-cols: 12;
+  }
+}
+
+/* ---------- SURFACES ---------- */
+
+.dtc-page,
+.dtc-surface-light {
+  --dtc-bg: var(--dtc-paper);
+  --dtc-fg: var(--dtc-ink);
+  --dtc-fg-meta: var(--dtc-grey-text);
+  --dtc-rule: var(--dtc-grey);
+  --dtc-accent: var(--dtc-blue);
+  --dtc-accent-fg: var(--dtc-blue-deep);
+  --dtc-focus: var(--dtc-blue-deep);
+}
+
+.dtc-surface-dark,
+.dtc-surface-ink {
+  --dtc-bg: var(--dtc-navy);
+  --dtc-fg: var(--dtc-paper);
+  --dtc-fg-meta: var(--dtc-grey-muted);
+  --dtc-rule: rgba(247, 249, 251, 0.16);
+  --dtc-accent: var(--dtc-blue-electric);
+  --dtc-accent-fg: var(--dtc-cyan);
+  --dtc-focus: var(--dtc-cyan);
+}
+
+.dtc-surface-ink {
+  --dtc-bg: var(--dtc-ink);
+}
+
+.dtc-surface-light,
+.dtc-surface-dark,
+.dtc-surface-ink {
+  background: var(--dtc-bg);
+  color: var(--dtc-fg);
+}
+
+/* ---------- PAGE BASE ---------- */
+
+/* Anchor (#how, #session) meluncur halus dan tidak tertutup header sticky */
+:root:has(.dtc-page) {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--dtc-header-h);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:has(.dtc-page) {
+    scroll-behavior: auto;
+  }
+}
+
+/* Dasar global (sebelumnya di globals.css lama) */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Warna area overscroll (iOS) mengikuti permukaan halaman */
+html {
+  background: var(--dtc-paper);
+}
+
+html:has(.dtc-page.dtc-surface-ink, .dtc-page.dtc-surface-dark) {
+  background: var(--dtc-ink);
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+.dtc-page {
+  min-height: 100svh;
+  background: var(--dtc-bg);
+  color: var(--dtc-fg);
+  font-family: var(--dtc-font-body);
+  font-size: var(--dtc-text-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+.dtc-page *,
+.dtc-page *::before,
+.dtc-page *::after {
+  box-sizing: border-box;
+}
+
+.dtc-page :where(h1, h2, h3, h4, p, figure, dl, dd, ol, ul) {
+  margin: 0;
+}
+
+.dtc-page :where(ol, ul) {
+  padding: 0;
+  list-style: none;
+}
+
+.dtc-page :where(img, svg, video, canvas) {
+  display: block;
+  max-width: 100%;
+}
+
+.dtc-page :where(button) {
+  font: inherit;
+}
+
+.dtc-page ::selection {
+  background: var(--dtc-blue);
+  color: var(--dtc-white);
+}
+
+.dtc-page :focus-visible {
+  outline: 3px solid var(--dtc-focus);
+  outline-offset: 3px;
+}
+
+/* ---------- GRID 12 / 8 / 4 ---------- */
+
+.dtc-container {
+  padding-inline: var(--dtc-margin);
+}
+
+.dtc-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--dtc-cols), minmax(0, 1fr));
+  column-gap: var(--dtc-gutter);
+  padding-inline: var(--dtc-margin);
+}
+
+.dtc-grid > .dtc-full {
+  grid-column: 1 / -1;
+}
+
+.dtc-section {
+  padding-block: var(--dtc-section);
+}
+
+.dtc-grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--dtc-z-overlay);
+  display: grid;
+  grid-template-columns: repeat(var(--dtc-cols), minmax(0, 1fr));
+  column-gap: var(--dtc-gutter);
+  padding-inline: var(--dtc-margin);
+  pointer-events: none;
+}
+
+.dtc-grid-overlay > span {
+  background: rgba(8, 120, 237, 0.06);
+  border-inline: 1px solid rgba(8, 120, 237, 0.22);
+}
+
+.dtc-grid-overlay > span:nth-child(n + 5) {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .dtc-grid-overlay > span:nth-child(-n + 8) {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dtc-grid-overlay > span:nth-child(n) {
+    display: block;
+  }
+}
+
+/* ---------- TYPOGRAPHY ---------- */
+
+.dtc-hero-type,
+.dtc-display,
+.dtc-h1,
+.dtc-h2,
+.dtc-h3,
+.dtc-wide {
+  font-family: var(--dtc-font-display);
+  font-optical-sizing: auto;
+}
+
+.dtc-hero-type {
+  font-size: var(--dtc-text-hero);
+  font-weight: 800;
+  font-stretch: 62%;
+  line-height: 0.8;
+  letter-spacing: -0.035em;
+  word-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dtc-display {
+  font-size: var(--dtc-text-display);
+  font-weight: 800;
+  font-stretch: 66%;
+  line-height: 0.84;
+  letter-spacing: -0.03em;
+  word-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dtc-h1 {
+  font-size: var(--dtc-text-h1);
+  font-weight: 800;
+  font-stretch: 72%;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  word-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dtc-h2 {
+  font-size: var(--dtc-text-h2);
+  font-weight: 750;
+  font-stretch: 78%;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  word-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dtc-h3 {
+  font-size: var(--dtc-text-h3);
+  font-weight: 700;
+  font-stretch: 88%;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* Lebar penuh (wdth 125) meniru wordmark "DISCOVERY TECHNOLOGY CREATIVE" di logo */
+.dtc-wide {
+  font-weight: 700;
+  font-stretch: 125%;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dtc-year {
+  letter-spacing: 0.62em;
+}
+
+.dtc-lead {
+  max-width: 40ch;
+  font-size: var(--dtc-text-lead);
+  line-height: 1.5;
+}
+
+.dtc-body {
+  max-width: 62ch;
+  font-size: var(--dtc-text-body);
+  line-height: 1.6;
+}
+
+.dtc-meta,
+.dtc-micro {
+  font-family: var(--dtc-font-mono);
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.dtc-meta {
+  font-size: var(--dtc-text-meta);
+  letter-spacing: 0.08em;
+  color: var(--dtc-fg-meta);
+}
+
+.dtc-micro {
+  font-size: var(--dtc-text-micro);
+  letter-spacing: 0.06em;
+}
+
+.dtc-accent {
+  color: var(--dtc-accent);
+}
+
+.dtc-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.dtc-outline {
+  color: transparent;
+  -webkit-text-stroke: var(--dtc-stroke) var(--dtc-fg);
+}
+
+/* Meta dipisah garis miring: DTC / 2026 / SESSION 001 */
+.dtc-slashes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.dtc-slashes > * + *::before {
+  content: "/";
+  margin-inline: 0.6em;
+  color: var(--dtc-accent);
+}
+
+.dtc-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color var(--dtc-dur-1) var(--dtc-ease);
+}
+
+.dtc-link:hover {
+  text-decoration-color: var(--dtc-accent);
+  text-decoration-thickness: 2px;
+}
+
+/* ---------- ICON: ARROW ---------- */
+
+.dtc-arrow {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  background: currentColor;
+  -webkit-mask: var(--dtc-arrow-svg) center / contain no-repeat;
+  mask: var(--dtc-arrow-svg) center / contain no-repeat;
+  transition: transform var(--dtc-dur-2) var(--dtc-ease);
+}
+
+.dtc-arrow--ne {
+  rotate: -45deg;
+}
+
+.dtc-arrow--down {
+  rotate: 90deg;
+}
+
+.dtc-arrow--back {
+  rotate: 180deg;
+}
+
+/* ---------- BUTTON: [ INDEX | LABEL | ARROW ] ---------- */
+
+.dtc-btn {
+  --dtc-btn-bg: transparent;
+  --dtc-btn-fg: var(--dtc-fg);
+  --dtc-btn-border: var(--dtc-fg);
+  --dtc-btn-arrow-bg: transparent;
+  --dtc-btn-hover-bg: var(--dtc-fg);
+  --dtc-btn-hover-fg: var(--dtc-bg);
+
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  grid-auto-flow: column;
+  align-items: stretch;
+  min-height: 56px;
+  padding: 0;
+  overflow: hidden;
+  border: var(--dtc-stroke) solid var(--dtc-btn-border);
+  border-radius: var(--dtc-radius);
+  background: var(--dtc-btn-bg);
+  color: var(--dtc-btn-fg);
+  font-family: var(--dtc-font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-stretch: 112%;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--dtc-dur-2) var(--dtc-ease),
+    border-color var(--dtc-dur-2) var(--dtc-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dtc-btn > span {
+  display: flex;
+  align-items: center;
+  padding-inline: 1.15em;
+}
+
+.dtc-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--dtc-btn-hover-bg);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dtc-dur-3) var(--dtc-ease-expo);
+}
+
+.dtc-btn__index {
+  border-right: var(--dtc-stroke) solid var(--dtc-btn-border);
+  font-family: var(--dtc-font-mono);
+  font-size: var(--dtc-text-meta);
+  font-weight: 500;
+  font-stretch: 100%;
+  letter-spacing: 0.06em;
+}
+
+.dtc-btn__arrow {
+  justify-content: center;
+  min-width: 56px;
+  border-left: var(--dtc-stroke) solid var(--dtc-btn-border);
+  background: var(--dtc-btn-arrow-bg);
+  font-size: 1.25rem;
+  transition: background-color var(--dtc-dur-2) var(--dtc-ease);
+}
+
+@media (hover: hover) {
+  .dtc-btn:hover {
+    color: var(--dtc-btn-hover-fg);
+  }
+
+  .dtc-btn:hover::before {
+    transform: scaleX(1);
+  }
+
+  /* translateX bekerja di sumbu panah sendiri, jadi ↗ dan ↓ ikut arahnya */
+  .dtc-btn:hover .dtc-arrow {
+    transform: translateX(4px);
+  }
+}
+
+.dtc-btn:active {
+  transform: translateY(1px);
+}
+
+.dtc-btn--primary {
+  --dtc-btn-bg: var(--dtc-blue-deep);
+  --dtc-btn-fg: var(--dtc-white);
+  --dtc-btn-border: var(--dtc-blue-deep);
+  --dtc-btn-arrow-bg: var(--dtc-blue);
+  --dtc-btn-hover-bg: var(--dtc-ink);
+  --dtc-btn-hover-fg: var(--dtc-white);
+}
+
+.dtc-btn--primary:hover {
+  --dtc-btn-border: var(--dtc-ink);
+}
+
+:is(.dtc-surface-dark, .dtc-surface-ink) .dtc-btn--primary {
+  --dtc-btn-hover-bg: var(--dtc-paper);
+  --dtc-btn-hover-fg: var(--dtc-ink);
+}
+
+:is(.dtc-surface-dark, .dtc-surface-ink) .dtc-btn--primary:hover {
+  --dtc-btn-border: var(--dtc-paper);
+}
+
+.dtc-btn--lg {
+  min-height: 72px;
+  font-size: 1.0625rem;
+}
+
+.dtc-btn--lg .dtc-btn__arrow {
+  min-width: 72px;
+  font-size: 1.5rem;
+}
+
+/* Layar HP: label besar tetap satu baris */
+@media (max-width: 639.98px) {
+  .dtc-btn--lg {
+    min-height: 64px;
+    font-size: 0.9375rem;
+  }
+
+  .dtc-btn--lg > span {
+    padding-inline: 1em;
+  }
+
+  .dtc-btn--lg .dtc-btn__arrow {
+    min-width: 64px;
+  }
+}
+
+/* Ukuran header; tinggi tetap 44px supaya aman disentuh */
+.dtc-btn--sm {
+  min-height: var(--dtc-tap);
+  font-size: 0.8125rem;
+}
+
+.dtc-btn--sm > span {
+  padding-inline: 0.95em;
+}
+
+.dtc-btn--sm .dtc-btn__arrow {
+  min-width: var(--dtc-tap);
+  font-size: 1rem;
+}
+
+.dtc-btn--block {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.dtc-btn--block:not(:has(.dtc-btn__index)) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.dtc-btn:disabled,
+.dtc-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.dtc-btn:disabled::before,
+.dtc-btn[aria-disabled="true"]::before {
+  display: none;
+}
+
+/* ---------- LABELS & STATUS ---------- */
+
+.dtc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: 28px;
+  padding: 0.35em 0.7em;
+  border: var(--dtc-hairline) solid var(--dtc-fg);
+  font-family: var(--dtc-font-mono);
+  font-size: var(--dtc-text-meta);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dtc-tag--solid {
+  background: var(--dtc-fg);
+  color: var(--dtc-bg);
+}
+
+.dtc-tag--accent {
+  border-color: var(--dtc-accent);
+  color: var(--dtc-accent-fg);
+}
+
+/* Node = bulatan ujung jalur sirkuit di dalam huruf logo */
+.dtc-node {
+  display: inline-block;
+  flex: none;
+  width: 0.72em;
+  height: 0.72em;
+  border: var(--dtc-stroke) solid currentColor;
+  border-radius: 50%;
+}
+
+.dtc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--dtc-font-mono);
+  font-size: var(--dtc-text-meta);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dtc-status[data-state="active"] .dtc-node {
+  border-color: var(--dtc-accent);
+  background: var(--dtc-accent);
+}
+
+.dtc-status[data-state="live"] .dtc-node {
+  border-color: var(--dtc-cyan);
+  background: var(--dtc-cyan);
+  animation: dtc-blink 1.4s linear infinite;
+}
+
+.dtc-status[data-state="error"] .dtc-node {
+  border-color: var(--dtc-signal);
+  background: var(--dtc-signal);
+}
+
+/* ---------- LINES: TRACE, RULER, CORNERS ---------- */
+
+.dtc-rule {
+  height: 0;
+  border: 0;
+  border-top: var(--dtc-hairline) solid var(--dtc-rule);
+}
+
+.dtc-trace {
+  position: relative;
+  display: block;
+  height: var(--dtc-stroke);
+  margin-inline: 5px;
+  background: currentColor;
+}
+
+.dtc-trace::before,
+.dtc-trace::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: var(--dtc-stroke) solid currentColor;
+  border-radius: 50%;
+  background: var(--dtc-bg);
+  transform: translateY(-50%);
+}
+
+.dtc-trace::before {
+  left: -5px;
+}
+
+.dtc-trace::after {
+  right: -5px;
+}
+
+.dtc-trace--end::before {
+  display: none;
+}
+
+.dtc-ruler {
+  height: 12px;
+  border-bottom: var(--dtc-hairline) solid var(--dtc-rule);
+  background:
+    repeating-linear-gradient(90deg, var(--dtc-fg) 0 1px, transparent 1px 80px)
+      left bottom / 100% 12px no-repeat,
+    repeating-linear-gradient(90deg, var(--dtc-rule) 0 1px, transparent 1px 8px)
+      left bottom / 100% 5px no-repeat;
+}
+
+.dtc-corners {
+  --dtc-corner: 28px;
+  --dtc-corner-w: var(--dtc-stroke);
+  background:
+    linear-gradient(currentColor 0 0) left top / var(--dtc-corner)
+      var(--dtc-corner-w),
+    linear-gradient(currentColor 0 0) left top / var(--dtc-corner-w)
+      var(--dtc-corner),
+    linear-gradient(currentColor 0 0) right top / var(--dtc-corner)
+      var(--dtc-corner-w),
+    linear-gradient(currentColor 0 0) right top / var(--dtc-corner-w)
+      var(--dtc-corner),
+    linear-gradient(currentColor 0 0) left bottom / var(--dtc-corner)
+      var(--dtc-corner-w),
+    linear-gradient(currentColor 0 0) left bottom / var(--dtc-corner-w)
+      var(--dtc-corner),
+    linear-gradient(currentColor 0 0) right bottom / var(--dtc-corner)
+      var(--dtc-corner-w),
+    linear-gradient(currentColor 0 0) right bottom / var(--dtc-corner-w)
+      var(--dtc-corner);
+  background-repeat: no-repeat;
+}
+
+/* ---------- PRINT (lembar photocard) ---------- */
+
+.dtc-print {
+  background: var(--dtc-white);
+  box-shadow: var(--dtc-shadow-print);
+  transform: rotate(var(--dtc-tilt, 0deg));
+}
+
+/* ---------- HAND GLYPH (kerangka landmark MediaPipe) ---------- */
+
+:where(.dtc-hand) {
+  display: block;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:where(.dtc-hand) circle {
+  fill: currentColor;
+  stroke: none;
+}
+
+:where(.dtc-hand) .dtc-hand__origin {
+  fill: var(--dtc-bg);
+  stroke: currentColor;
+  stroke-width: 1.2;
+}
+
+:where(.dtc-hand) .dtc-hand__tip {
+  fill: var(--dtc-accent);
+  stroke: none;
+}
+
+/* ---------- LOGO ---------- */
+
+.dtc-logo {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+}
+
+.dtc-logo img {
+  width: 100%;
+  height: auto;
+}
+
+.dtc-logo__crop {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.dtc-logo--mark img {
+  position: absolute;
+  max-width: none;
+}
+
+/* Pelat memakai warna latar asli JPEG (#F7F7F7) supaya tepi logo tidak terlihat */
+.dtc-logo--plate {
+  padding: 0.55em 0.7em;
+  background: var(--dtc-logo-bg);
+  box-shadow: inset 0 0 0 1px rgba(5, 10, 18, 0.1);
+}
+
+/* ---------- MOTION ---------- */
+
+@keyframes dtc-rise {
+  from {
+    transform: translate3d(0, 110%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes dtc-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dtc-mask-up {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes dtc-draw-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes dtc-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes dtc-shutter {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  45%,
+  55% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+@keyframes dtc-shutter-close {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes dtc-shutter-open {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+@keyframes dtc-scroll-cue {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Bungkus tiap baris judul: <span class="dtc-reveal"><span>DTC</span></span>
+   Klip hanya arah vertikal supaya huruf lebar tidak terpotong ke samping. */
+.dtc-reveal {
+  display: block;
+  overflow: hidden;
+  overflow: visible clip;
+}
+
+.dtc-reveal > * {
+  display: block;
+  animation: dtc-rise var(--dtc-dur-4) var(--dtc-ease-expo) both;
+  animation-delay: var(--dtc-delay, 0ms);
+}
+
+.dtc-fade-in {
+  animation: dtc-fade-up var(--dtc-dur-4) var(--dtc-ease-expo) both;
+  animation-delay: var(--dtc-delay, 0ms);
+}
+
+.dtc-mask-in {
+  animation: dtc-mask-up var(--dtc-dur-4) var(--dtc-ease-expo) both;
+  animation-delay: var(--dtc-delay, 0ms);
+}
+
+.dtc-draw {
+  transform-origin: left center;
+  animation: dtc-draw-x var(--dtc-dur-4) var(--dtc-ease-expo) both;
+  animation-delay: var(--dtc-delay, 0ms);
+}
+
+.dtc-shutter {
+  position: fixed;
+  inset: 0;
+  z-index: var(--dtc-z-shutter);
+  background: var(--dtc-ink);
+  pointer-events: none;
+  animation: dtc-shutter var(--dtc-dur-4) var(--dtc-ease-inout) both;
+}
+
+/* Versi lokal shutter, misalnya di dalam frame kamera */
+.dtc-shutter-blade {
+  position: absolute;
+  inset: 0;
+  background: var(--dtc-fg);
+  pointer-events: none;
+  animation: dtc-shutter var(--dtc-dur-4) var(--dtc-ease-inout) both;
+  animation-delay: var(--dtc-delay, 0ms);
+}
+
+/* Transisi halaman: close di halaman lama, open di halaman baru */
+.dtc-shutter--close {
+  animation: dtc-shutter-close var(--dtc-dur-3) var(--dtc-ease-inout) both;
+}
+
+.dtc-shutter--open {
+  animation: dtc-shutter-open var(--dtc-dur-4) var(--dtc-ease-inout) both;
+}
+
+@supports (animation-timeline: view()) {
+  .dtc-draw-on-scroll {
+    transform-origin: left center;
+    animation: dtc-draw-x linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 45%;
+  }
+}
+
+/* Reveal saat di-scroll, tanpa JS; browser lama langsung menampilkan konten */
+@supports (animation-timeline: view()) {
+  .dtc-on-scroll {
+    animation: dtc-fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 28%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dtc-page *,
+  .dtc-page *::before,
+  .dtc-page *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .dtc-on-scroll {
+    animation: none !important;
+  }
+
+  .dtc-draw-on-scroll {
+    animation: none !important;
+  }
+}
+
+/* ---------- UTILITIES ---------- */
+
+.dtc-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dtc-magnetic {
+  display: inline-flex;
+  transition: transform var(--dtc-dur-3) var(--dtc-ease-expo);
+}
+
+/* ---------- HEADER ---------- */
+
+.dtc-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(var(--dtc-cols), minmax(0, 1fr));
+  column-gap: var(--dtc-gutter);
+  align-items: center;
+  min-height: var(--dtc-header-h);
+  padding-inline: var(--dtc-margin);
+  border-bottom: var(--dtc-hairline) solid var(--dtc-rule);
+  background: var(--dtc-bg);
+  color: var(--dtc-fg);
+}
+
+.dtc-header__brand {
+  grid-column: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--dtc-tap);
+  color: inherit;
+  font-size: 0.8125rem;
+  text-decoration: none;
+}
+
+.dtc-header__meta {
+  display: none;
+}
+
+.dtc-header__slot {
+  grid-column: 3 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .dtc-header__brand {
+    grid-column: 1 / span 3;
+  }
+
+  .dtc-header__meta {
+    display: flex;
+    grid-column: 4 / span 5;
+  }
+
+  .dtc-header__slot {
+    grid-column: 9 / -1;
+  }
+}
+
+/* ---------- CUSTOM CURSOR (desktop, halaman tertentu saja) ---------- */
+
+.dtc-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9990;
+  display: none;
+  color: var(--dtc-white);
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+:root.dtc-cursor-on .dtc-cursor {
+  display: block;
+}
+
+:root.dtc-cursor-on .dtc-page,
+:root.dtc-cursor-on .dtc-page * {
+  cursor: none;
+}
+
+.dtc-cursor__cross,
+.dtc-cursor__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.dtc-cursor__cross {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  background:
+    linear-gradient(currentColor 0 0) center / 100% 1.5px no-repeat,
+    linear-gradient(currentColor 0 0) center / 1.5px 100% no-repeat;
+}
+
+.dtc-cursor__frame {
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+}
+
+.dtc-cursor__frame > i {
+  --dtc-corner: 12px;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity var(--dtc-dur-2) var(--dtc-ease),
+    transform var(--dtc-dur-3) var(--dtc-ease-expo);
+}
+
+.dtc-cursor__label {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  font: 500 10px/1 var(--dtc-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:root.dtc-cursor-hover .dtc-cursor__frame > i {
+  opacity: 1;
+  transform: none;
+}
+
+:root.dtc-cursor-hover .dtc-cursor__label {
+  left: 34px;
+}
+
+/* Tombol operator (KioskControls) ikut gaya DTC di halaman yang sudah dimigrasi */
+body:has(.dtc-page) .kiosk-button {
+  min-height: var(--dtc-tap);
+  padding: 0 16px;
+  border: var(--dtc-stroke) solid var(--dtc-ink);
+  border-radius: 0;
+  background: var(--dtc-paper);
+  color: var(--dtc-ink);
+  box-shadow: none;
+  font: 600 11px/1 var(--dtc-font-mono);
+  letter-spacing: 0.08em;
+}
+
+body:has(.dtc-page) .kiosk-button:hover {
+  background: var(--dtc-ink);
+  color: var(--dtc-paper);
+}
+
+body:has(.dtc-page) .kiosk-message {
+  border-radius: 0;
+  background: var(--dtc-ink);
+  font-family: var(--dtc-font-body);
+}
+
+/* ---------- ACTION BAR (CTA menempel di bawah layar) ---------- */
+
+:root:has(.dtc-actionbar) {
+  --dtc-actionbar-h: 96px;
+  scroll-padding-bottom: var(--dtc-actionbar-h);
+}
+
+@media (max-width: 639.98px) {
+  :root:has(.dtc-actionbar) {
+    --dtc-actionbar-h: 152px;
+  }
+}
+
+.dtc-actionbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  min-height: var(--dtc-actionbar-h);
+}

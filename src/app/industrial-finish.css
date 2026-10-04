@@ -1,0 +1,61 @@
+/* TEKNIK FEST / STAGE 05 — FINAL POLISH
+   Additive, scoped fixes. Preserve globals.css and stages 1–4. */
+
+/* Stop long technical labels from causing horizontal overflow on phones. */
+.tf-home, .tf-booth, .tf-finalize-page, .tf-download-page {
+  max-width: 100%;
+}
+.tf-home img, .tf-booth img, .tf-finalize-page img, .tf-download-page img {
+  max-width: 100%;
+}
+.tf-home :is(button, a),
+.tf-booth :is(button, a),
+.tf-finalize-page :is(button, a),
+.tf-download-page :is(button, a) {
+  -webkit-tap-highlight-color: rgba(215, 25, 32, .24);
+}
+
+/* Keyboard users can find controls throughout all four redesigned pages. */
+:is(.tf-home, .tf-booth, .tf-finalize-page, .tf-download-page)
+:is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #f04438;
+  outline-offset: 4px;
+}
+
+/* Ensure the downloadable image is not cropped on mobile. */
+.tf-download-image, .tf-finalize-final-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Prevent tiny interface labels from disappearing under text zoom. */
+.tf-download-metadata, .tf-qr-meta, .tf-booth-session-spec {
+  overflow-wrap: anywhere;
+}
+
+/* The fullscreen operator button should not cover mobile download actions.
+   KioskControls is already hidden on /download, this is extra safety. */
+.tf-download-page ~ .kiosk-controls { display: none; }
+
+@media (max-width: 600px) {
+  .tf-qr-actions :is(a, button),
+  .tf-download-primary,
+  .tf-finalize :is(button, a) {
+    min-height: 44px;
+  }
+  .tf-qr-white-mat { max-width: 100%; }
+  .tf-qr-white-mat svg { max-width: 100%; height: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.tf-home, .tf-booth, .tf-finalize-page, .tf-download-page) *,
+  :is(.tf-home, .tf-booth, .tf-finalize-page, .tf-download-page) *::before,
+  :is(.tf-home, .tf-booth, .tf-finalize-page, .tf-download-page) *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

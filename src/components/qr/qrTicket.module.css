@@ -1,0 +1,314 @@
+/** @format */
+
+/* =============================================================
+   QR TICKET · tiket digital photocard
+   Kertas terang di atas panel ink; notch perforasi memakai warna panel.
+   ============================================================= */
+
+.root {
+  display: grid;
+  gap: var(--dtc-space-3);
+}
+
+.ticket {
+  --notch: 13px;
+  --ticket-cut: var(--dtc-ink);
+
+  /* Token permukaan terang untuk isi tiket (tombol, fokus) */
+  --dtc-bg: var(--dtc-paper);
+  --dtc-fg: var(--dtc-ink);
+  --dtc-fg-meta: var(--dtc-grey-text);
+  --dtc-rule: var(--dtc-grey);
+  --dtc-accent: var(--dtc-blue);
+  --dtc-accent-fg: var(--dtc-blue-deep);
+  --dtc-focus: var(--dtc-blue-deep);
+
+  position: relative;
+  display: grid;
+  background: var(--dtc-paper);
+  color: var(--dtc-ink);
+  animation: ticket-in var(--dtc-dur-4) var(--dtc-ease-expo) both;
+}
+
+.band {
+  display: flex;
+  align-items: center;
+  gap: var(--dtc-space-3);
+  padding: var(--dtc-space-3) var(--dtc-space-4);
+  background: var(--dtc-navy);
+  color: var(--dtc-paper);
+}
+
+.brand {
+  font-family: var(--dtc-font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-stretch: 125%;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bandMeta {
+  margin-left: auto;
+  color: var(--dtc-grey-muted);
+  font: 500 var(--dtc-text-micro) / 1.2 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.main {
+  display: grid;
+  gap: var(--dtc-space-3);
+  padding: var(--dtc-space-4) var(--dtc-space-5) var(--dtc-space-3);
+}
+
+.headRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--dtc-space-3);
+}
+
+.headRow > div {
+  min-width: 0;
+}
+
+.kicker {
+  color: var(--dtc-grey-text);
+  font: 500 var(--dtc-text-micro) / 1.2 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.name {
+  overflow-wrap: anywhere;
+  font-family: var(--dtc-font-display);
+  font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  font-weight: 800;
+  font-stretch: 72%;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  word-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.number {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  color: var(--dtc-blue-deep);
+  font-family: var(--dtc-font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  font-stretch: 72%;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.number span {
+  color: var(--dtc-grey-text);
+  font: 500 var(--dtc-text-micro) / 1.4 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.codeFrame {
+  --dtc-corner: 18px;
+
+  justify-self: center;
+  padding: var(--dtc-space-3);
+  color: var(--dtc-ink);
+}
+
+.code {
+  display: grid;
+  place-items: center;
+  width: min(216px, 62vw);
+  aspect-ratio: 1;
+  background: var(--dtc-white);
+}
+
+.qr {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: qr-in var(--dtc-dur-4) var(--dtc-ease-expo) both;
+}
+
+.wait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(5, 10, 18, 0.07) 0 1px,
+      transparent 1px 14.5px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(5, 10, 18, 0.07) 0 1px,
+      transparent 1px 14.5px
+    );
+}
+
+.scan {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--dtc-blue);
+  box-shadow: 0 0 14px var(--dtc-blue-electric);
+  animation: scan 1.6s var(--dtc-ease-inout) infinite alternate;
+}
+
+.wait span {
+  position: relative;
+  padding: var(--dtc-space-2) var(--dtc-space-3);
+  background: var(--dtc-paper);
+  font: 500 var(--dtc-text-micro) / 1.3 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.fail {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--dtc-space-3);
+  width: 100%;
+  height: 100%;
+  padding: var(--dtc-space-4);
+  text-align: center;
+}
+
+.fail strong {
+  font-family: var(--dtc-font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+  font-stretch: 76%;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.fail span {
+  color: var(--dtc-grey-text);
+  font-size: var(--dtc-text-small);
+  line-height: 1.45;
+}
+
+.ticket[data-status="error"] .fail strong {
+  color: var(--dtc-signal);
+}
+
+.instruction {
+  color: var(--dtc-grey-text);
+  font-size: var(--dtc-text-small);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.instruction[data-warn] {
+  padding: var(--dtc-space-2) var(--dtc-space-3);
+  border-left: 2px solid var(--dtc-signal);
+  background: color-mix(in srgb, var(--dtc-signal) 8%, transparent);
+  color: var(--dtc-ink);
+  text-align: left;
+}
+
+/* Garis sobek + notch setengah lingkaran di kedua sisi */
+.perforation {
+  position: relative;
+  margin-inline: var(--notch);
+  border-top: 2px dashed var(--dtc-grey);
+}
+
+.perforation::before,
+.perforation::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  width: calc(var(--notch) * 2);
+  height: calc(var(--notch) * 2);
+  border-radius: 50%;
+  background: var(--ticket-cut);
+  transform: translateY(-50%);
+}
+
+.perforation::before {
+  left: calc(var(--notch) * -2);
+}
+
+.perforation::after {
+  right: calc(var(--notch) * -2);
+}
+
+.stub {
+  display: grid;
+  grid-template-columns: 0.9fr 1.2fr 1fr;
+  padding: var(--dtc-space-1) var(--dtc-space-5) var(--dtc-space-3);
+}
+
+.stub div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--dtc-space-3) var(--dtc-space-2) var(--dtc-space-1) 0;
+}
+
+.stub dt {
+  color: var(--dtc-grey-text);
+  font: 500 var(--dtc-text-micro) / 1.2 var(--dtc-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.stub dd {
+  font: 600 var(--dtc-text-small) / 1.3 var(--dtc-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket[data-status="expired"] .code,
+.ticket[data-status="expired"] .name {
+  opacity: 0.5;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dtc-space-2);
+}
+
+.actions :global(.dtc-btn) > span:first-child {
+  justify-content: center;
+}
+
+.privacy {
+  color: var(--dtc-fg-meta);
+  font-size: var(--dtc-text-micro);
+  line-height: 1.5;
+}
+
+@keyframes ticket-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes qr-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes scan {
+  to {
+    transform: translateY(min(214px, calc(62vw - 2px)));
+  }
+}
