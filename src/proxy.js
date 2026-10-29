@@ -2,29 +2,31 @@
 
 import { NextResponse } from "next/server";
 
-// Lewat tunnel publik, internet hanya boleh melihat halaman download + gambarnya.
-// Kiosk, editor, dan upload API tetap khusus laptop booth / Wi-Fi booth.
+import { getShareMode, readEnv } from "./lib/shareMode";
+
+// Laptop booth yang dibuka lewat tunnel publik: internet hanya boleh melihat halaman
+// download + gambarnya. Kiosk, editor, dan upload tetap khusus laptop / Wi-Fi booth.
+// Website yang di-deploy (mode site) memang publik, jadi tidak disaring di sini;
+// upload dilindungi BOOTH_ACCESS_KEY.
 const PUBLIC_PATHS = [
   /^\/d\/[0-9a-z-]+$/i,
   /^\/download\/[0-9a-z-]+$/i,
   /^\/api\/photos\/[0-9a-z-]+$/i,
   /^\/api\/share\/ping$/,
-  /^\/(icon|apple-icon)$/,
+  /^\/(icon\.svg|apple-icon\.png|favicon\.ico)$/,
+  /^\/logo\/[\w.-]+$/,
 ];
 
-function publicHost() {
-  const key = "NEXT_PUBLIC_PUBLIC_URL";
-  try {
-    return process.env[key] ? new URL(process.env[key]).host : "";
-  } catch {
-    return "";
-  }
-}
-
-function isPublicRequest(request) {
+function isTunnelRequest(request) {
   const { headers } = request;
   if (headers.has("cf-connecting-ip") || headers.has("cf-ray")) return true;
-  const host = publicHost();
+  let host = "";
+  try {
+    const value = readEnv("NEXT_PUBLIC_PUBLIC_URL");
+    host = value ? new URL(value).host : "";
+  } catch {
+    host = "";
+  }
   return (
     Boolean(host) &&
     (headers.get("host") === host || headers.get("x-forwarded-host") === host)
@@ -32,7 +34,7 @@ function isPublicRequest(request) {
 }
 
 export function proxy(request) {
-  if (!isPublicRequest(request)) return NextResponse.next();
+  if (getShareMode() === "site" || !isTunnelRequest(request)) return NextResponse.next();
 
   const { pathname } = request.nextUrl;
   const allowed =

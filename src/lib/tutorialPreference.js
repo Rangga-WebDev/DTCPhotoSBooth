@@ -2,8 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
-const KEY = "dtc-skip-tutorial";
-const EVENT = "dtc-skip-tutorial-change";
+const KEY = "cia-skip-tutorial";
+const EVENT = "cia-skip-tutorial-change";
 
 function subscribe(callback) {
   window.addEventListener(EVENT, callback);

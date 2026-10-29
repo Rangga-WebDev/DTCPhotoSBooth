@@ -4,7 +4,7 @@
 
 import { useEffect } from "react";
 
-// Siapkan model gestur saat browser senggang; modul MediaPipe dimuat terpisah (dynamic import).
+// Siapkan model gestur saat browser senggang; AI jalan di worker jadi halaman tetap ringan.
 export default function useWarmGestureAI(enabled = true) {
   useEffect(() => {
     if (!enabled) return undefined;
@@ -12,8 +12,8 @@ export default function useWarmGestureAI(enabled = true) {
     let cancelled = false;
     const run = () => {
       if (cancelled) return;
-      import("../lib/gestureRecognizer")
-        .then((module) => module.warmUpGestureAI())
+      import("../lib/gestureEngine")
+        .then((module) => module.warmUpGestureEngine())
         .catch(() => {});
     };
 

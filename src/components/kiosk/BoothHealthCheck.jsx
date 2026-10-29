@@ -4,153 +4,143 @@
 
 import { useEffect, useState } from "react";
 
+import { boothKeyHeaders } from "../../lib/boothKey";
 import styles from "./boothHealth.module.css";
+
+const STATUS_LABEL = {
+  ready: "SIAP",
+  checking: "MEMERIKSA",
+  waiting: "MENUNGGU",
+  error: "BERMASALAH",
+};
+
+function shareSummary(share) {
+  if (!share) return { label: "MEMERIKSA", detail: "", ok: false };
+  if (share.active === "site") return { label: "WEBSITE", detail: share.origin, ok: true };
+  if (share.active === "public") return { label: "LINK PUBLIK", detail: share.origin, ok: true };
+  if (share.active === "local" && share.fallback) {
+    return {
+      label: "WI-FI (CADANGAN)",
+      detail: share.public?.error || "Tunnel tidak menjawab",
+      ok: false,
+    };
+  }
+  if (share.active === "local") return { label: "WI-FI BOOTH", detail: share.origin, ok: true };
+  return { label: "BELUM SIAP", detail: share.error || "", ok: false };
+}
+
+function keySummary(key) {
+  if (!key) return { label: "MEMERIKSA", ok: false };
+  if (!key.required) return { label: "TIDAK PERLU", ok: true };
+  if (!key.configured) {
+    return {
+      label: "BELUM ADA DI SERVER",
+      ok: false,
+      detail: "Website publik wajib memakai env BOOTH_ACCESS_KEY. Isi di server lalu deploy ulang.",
+    };
+  }
+  if (key.valid) return { label: "OK", ok: true };
+  return {
+    label: key.provided ? "SALAH" : "BELUM DIATUR",
+    ok: false,
+    detail: "Buka halaman utama dengan ?key=KUNCI sekali di laptop booth.",
+  };
+}
 
 export default function BoothHealthCheck({ cameraRef, audioReady = false }) {
   const [cameraStatus, setCameraStatus] = useState("checking");
-
   const [serverStatus, setServerStatus] = useState("checking");
-
   const [cameraResolution, setCameraResolution] = useState("");
-
   const [showDetails, setShowDetails] = useState(false);
-
   const [share, setShare] = useState(null);
 
-  // Periksa kamera yang sedang digunakan.
-  // Tidak membuat stream kamera baru.
+  // Kamera yang sedang dipakai booth; tidak membuat stream baru.
   useEffect(() => {
     function checkCamera() {
       const video = cameraRef?.current?.getVideo?.();
-
-      if (!video) {
-        setCameraStatus("waiting");
-        setCameraResolution("");
-        return;
-      }
-
-      const stream = video.srcObject;
-
-      const videoTrack = stream?.getVideoTracks?.()[0];
-
-      const isActive =
-        videoTrack?.readyState === "live" &&
-        !videoTrack?.muted &&
+      const track = video?.srcObject?.getVideoTracks?.()[0];
+      const active =
+        track?.readyState === "live" &&
+        !track?.muted &&
         video.readyState >= 2 &&
-        video.videoWidth > 0 &&
-        video.videoHeight > 0;
+        video.videoWidth > 0;
 
-      if (isActive) {
-        setCameraStatus("ready");
-
-        setCameraResolution(`${video.videoWidth} × ${video.videoHeight}`);
-      } else {
-        setCameraStatus("waiting");
-        setCameraResolution("");
-      }
+      setCameraStatus(active ? "ready" : "waiting");
+      setCameraResolution(active ? `${video.videoWidth} × ${video.videoHeight}` : "");
     }
 
-    checkCamera();
-
-    const interval = window.setInterval(checkCamera, 3000);
-
+    const first = setTimeout(checkCamera, 0);
+    const interval = setInterval(checkCamera, 3000);
     return () => {
-      window.clearInterval(interval);
+      clearTimeout(first);
+      clearInterval(interval);
     };
   }, [cameraRef]);
 
-  // Periksa apakah server Next.js merespons.
-  // Ini bukan pemeriksaan koneksi HP.
+  // Server Next.js + alamat QR + penyimpanan + kunci booth.
   useEffect(() => {
     let cancelled = false;
 
-    async function checkServer() {
-      try {
-        const response = await fetch("/", {
-          method: "HEAD",
-          cache: "no-store",
-        });
-
-        if (!cancelled) {
-          setServerStatus(response.ok ? "ready" : "error");
-        }
-      } catch {
-        if (!cancelled) {
-          setServerStatus("error");
-        }
-      }
-    }
-
-    checkServer();
-
-    const interval = window.setInterval(checkServer, 15000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
-  }, []);
-
-  // Alamat QR yang aktif; mode publik ikut mengecek tunnel sungguhan.
-  useEffect(() => {
-    let cancelled = false;
-
-    async function checkShare() {
+    async function check() {
       try {
         const response = await fetch("/api/share/status", {
           cache: "no-store",
+          headers: boothKeyHeaders(),
         });
         const data = await response.json();
-        if (!cancelled) setShare(data);
+        if (cancelled) return;
+        setServerStatus(response.ok ? "ready" : "error");
+        setShare(data);
       } catch {
-        if (!cancelled) setShare({ active: null, local: {}, public: {} });
+        if (cancelled) return;
+        setServerStatus("error");
+        setShare({ active: null, error: "Server tidak menjawab." });
       }
     }
 
-    checkShare();
-
-    const interval = window.setInterval(checkShare, 30000);
-
+    check();
+    const interval = setInterval(check, 30000);
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      clearInterval(interval);
     };
   }, []);
 
-  function shareSummary() {
-    if (!share) return { label: "MEMERIKSA", detail: "" };
-    if (share.active === "public") {
-      return { label: "LINK PUBLIK", detail: share.public.origin };
-    }
-    if (share.active === "local" && share.mode === "public") {
-      return {
-        label: "WI-FI (CADANGAN)",
-        detail: share.public.error || "Tunnel tidak menjawab",
-      };
-    }
-    if (share.active === "local") {
-      return { label: "WI-FI BOOTH", detail: share.local.origin };
-    }
-    return {
-      label: "BELUM SIAP",
-      detail: share.public?.error || share.local?.error || "",
-    };
-  }
-
-  const shareInfo = shareSummary();
-
-  function statusLabel(status) {
-    if (status === "ready") return "SIAP";
-    if (status === "checking") return "MEMERIKSA";
-    if (status === "waiting") return "MENUNGGU";
-    return "BERMASALAH";
-  }
-
+  const qr = shareSummary(share);
+  const key = keySummary(share?.key);
+  const storageOk = Boolean(share?.storage?.ready);
   const allReady =
     cameraStatus === "ready" &&
     serverStatus === "ready" &&
     audioReady &&
-    Boolean(share?.active);
+    qr.ok &&
+    key.ok &&
+    storageOk;
+
+  const items = [
+    {
+      name: "Kamera",
+      value: STATUS_LABEL[cameraStatus],
+      ok: cameraStatus === "ready",
+      detail: cameraResolution,
+    },
+    { name: "Suara", value: audioReady ? "SIAP" : "BELUM NYALA", ok: audioReady },
+    { name: "Server", value: STATUS_LABEL[serverStatus], ok: serverStatus === "ready" },
+    { name: "Link QR", value: qr.label, ok: qr.ok, detail: qr.detail },
+    {
+      name: "Penyimpanan",
+      value: share?.storage
+        ? storageOk
+          ? share.storage.driver === "blob"
+            ? "VERCEL BLOB"
+            : "LAPTOP"
+          : "BERMASALAH"
+        : "MEMERIKSA",
+      ok: storageOk,
+      detail: share?.storage?.error,
+    },
+    { name: "Kunci booth", value: key.label, ok: key.ok, detail: key.detail },
+  ];
 
   return (
     <section className={styles.root}>
@@ -161,57 +151,29 @@ export default function BoothHealthCheck({ cameraRef, audioReady = false }) {
         aria-expanded={showDetails}
       >
         <span>
-          <i
-            className={styles.dot}
-            data-ready={allReady || undefined}
-            aria-hidden="true"
-          />
-          {allReady ? "SEMUA SIAP" : "CEK PERANGKAT"}
+          <i className={styles.dot} data-ready={allReady || undefined} aria-hidden="true" />
+          {allReady ? "Semua siap" : "Cek perangkat"}
         </span>
-
-        <span>{showDetails ? "TUTUP −" : "LIHAT +"}</span>
+        <span>{showDetails ? "Tutup −" : "Lihat +"}</span>
       </button>
 
       {showDetails && (
         <div className={styles.details}>
-          <div className={styles.item}>
-            <span>Kamera</span>
-
-            <strong>{statusLabel(cameraStatus)}</strong>
-
-            {cameraResolution && <small>{cameraResolution}</small>}
-          </div>
-
-          <div className={styles.item}>
-            <span>Suara</span>
-
-            <strong>{audioReady ? "SIAP" : "BELUM NYALA"}</strong>
-          </div>
-
-          <div className={styles.item}>
-            <span>Server</span>
-
-            <strong>{statusLabel(serverStatus)}</strong>
-          </div>
-
-          <div className={styles.item}>
-            <span>Link QR</span>
-
-            <strong>{shareInfo.label}</strong>
-
-            {shareInfo.detail && <small>{shareInfo.detail}</small>}
-          </div>
-
+          {items.map((item) => (
+            <div
+              key={item.name}
+              className={styles.item}
+              data-ok={item.ok || undefined}
+              data-bad={!item.ok || undefined}
+            >
+              <span>{item.name}</span>
+              <strong>{item.value}</strong>
+              {item.detail && <small>{item.detail}</small>}
+            </div>
+          ))}
           <p className={styles.note}>
-            Kamera &quot;siap&quot; artinya webcam sudah mengirim gambar. Belum
-            tentu gesturnya kebaca, jadi tetap coba langsung sebelum acara
-            mulai.
-          </p>
-
-          <p className={styles.note}>
-            {share?.active === "public"
-              ? "Tes satu QR dari HP yang memakai data seluler (Wi-Fi dimatikan) sebelum acara mulai."
-              : "Tes satu QR dari HP yang tersambung ke Wi-Fi booth sebelum acara mulai."}
+            Kamera &quot;siap&quot; artinya webcam sudah mengirim gambar. Tetap coba satu
+            sesi penuh dan scan satu QR dari HP sebelum acara mulai.
           </p>
         </div>
       )}

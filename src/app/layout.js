@@ -1,29 +1,30 @@
 /** @format */
 
-import "@fontsource-variable/archivo/wdth.css";
-import "@fontsource/instrument-sans/400.css";
-import "@fontsource/instrument-sans/600.css";
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/500.css";
-import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/barlow/latin-400.css";
+import "@fontsource/barlow/latin-500.css";
+import "@fontsource/barlow/latin-600.css";
+import "@fontsource/barlow-condensed/latin-600.css";
+import "@fontsource/barlow-condensed/latin-700.css";
+import "@fontsource/barlow-condensed/latin-800.css";
 
-import "./dtc-system.css";
+import "./cia.css";
 import KioskControls from "../components/kiosk/KioskControls";
 
 export const metadata = {
-  title: "DTCBooth · DTC 2026",
+  title: "CIA Photobooth · Civil In Action",
   description:
-    "DTCBooth, AI photobooth DTC 2026 (Discovery Technology Creative). Foto pakai gestur tangan, hasilnya diambil lewat QR.",
-  applicationName: "DTCBooth",
+    "Photobooth AI Teknik Sipil untuk Civil In Action. Foto pakai hand sign, hasilnya dibawa pulang lewat QR.",
+  applicationName: "CIA Photobooth",
 };
 
 export const viewport = {
-  themeColor: "#07152B",
+  themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" data-scroll-behavior="smooth">
+    <html lang="id">
       <body>
         {children}
         <KioskControls />

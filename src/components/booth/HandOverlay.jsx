@@ -15,8 +15,8 @@ const BONES = [
   [0, 17],
 ];
 const TIPS = new Set([4, 8, 12, 16, 20]);
-const PAPER = "rgba(247, 249, 251, 0.92)";
-const CYAN = "#12c8f4";
+const WHITE = "rgba(255, 255, 255, 0.9)";
+const RED = "#F00C1C";
 
 function brackets(ctx, left, top, right, bottom, size) {
   ctx.beginPath();
@@ -35,7 +35,7 @@ function brackets(ctx, left, top, right, bottom, size) {
   ctx.stroke();
 }
 
-// Kerangka tangan live di atas video; digambar langsung ke canvas (bukan state React).
+// Kerangka tangan live di atas video; digambar langsung ke canvas, bukan lewat state React.
 export default function HandOverlay({ ref, video }) {
   const canvasRef = useRef(null);
   const sizeRef = useRef({ width: 0, height: 0, ratio: 1 });
@@ -59,7 +59,8 @@ export default function HandOverlay({ ref, video }) {
   useImperativeHandle(
     ref,
     () => ({
-      draw(hands, { active = false, progress = 0, roi = null } = {}) {
+      // hands: tangan terlacak (pakai titik yang sudah dihaluskan); activeId = tangan pemberi gestur.
+      draw(hands, { activeId = null, armed = false, progress = 0, roi = null } = {}) {
         const ctx = canvasRef.current?.getContext("2d");
         if (!ctx) return;
 
@@ -69,47 +70,43 @@ export default function HandOverlay({ ref, video }) {
         if (!video?.videoWidth) return;
 
         // Sama dengan object-fit: cover + cermin di elemen video.
-        const scale = Math.max(
-          width / video.videoWidth,
-          height / video.videoHeight,
-        );
+        const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
         const offsetX = (width - video.videoWidth * scale) / 2;
         const offsetY = (height - video.videoHeight * scale) / 2;
         const toScreen = (x, y) => [
           offsetX + (1 - x) * video.videoWidth * scale,
           offsetY + y * video.videoHeight * scale,
         ];
-        const line = active ? CYAN : PAPER;
 
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-        ctx.font = "500 11px 'IBM Plex Mono', monospace";
+        ctx.font = "600 13px 'Barlow Condensed', sans-serif";
 
-        if (roi && roi.mode !== "wide") {
+        // Kotak zoom hanya saat mengikuti tangan jauh; pemindaian saat kosong tidak digambar
+        // supaya layar tidak berkedip.
+        if (roi?.mode === "follow") {
           const [right, top] = toScreen(roi.rect.x, roi.rect.y);
-          const [left, bottom] = toScreen(
-            roi.rect.x + roi.rect.w,
-            roi.rect.y + roi.rect.h,
-          );
+          const [left, bottom] = toScreen(roi.rect.x + roi.rect.w, roi.rect.y + roi.rect.h);
           ctx.save();
-          ctx.setLineDash([6, 6]);
-          ctx.strokeStyle = "rgba(18, 200, 244, 0.6)";
+          ctx.setLineDash([8, 8]);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
           ctx.lineWidth = 1;
           ctx.strokeRect(left, top, right - left, bottom - top);
           ctx.restore();
-          ctx.fillStyle = "rgba(18, 200, 244, 0.85)";
-          ctx.fillText(`ROI ${roi.zoom}×`, left + 8, top + 18);
+          ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+          ctx.fillText(`ZOOM ${roi.zoom}×`, left + 10, top + 20);
         }
 
-        if (!hands?.length) return;
+        hands?.forEach((hand) => {
+          const source = hand.smooth ?? hand.points;
+          if (!source?.length) return;
 
-        hands.forEach((landmarks, handIndex) => {
-          if (!landmarks?.length) return;
-
-          const points = landmarks.map((point) => toScreen(point.x, point.y));
+          const active = armed && hand.trackId === activeId;
+          const line = active ? RED : WHITE;
+          const points = source.map((point) => toScreen(point.x, point.y));
 
           ctx.strokeStyle = line;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = active ? 3 : 2;
           BONES.forEach((chain) => {
             ctx.beginPath();
             chain.forEach((index, step) => {
@@ -120,37 +117,48 @@ export default function HandOverlay({ ref, video }) {
             ctx.stroke();
           });
 
+          ctx.fillStyle = WHITE;
           points.forEach(([x, y], index) => {
+            if (TIPS.has(index)) return;
             ctx.beginPath();
-            ctx.fillStyle = TIPS.has(index) ? CYAN : PAPER;
-            ctx.arc(x, y, TIPS.has(index) ? 4.5 : 2.5, 0, Math.PI * 2);
+            ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.fillStyle = RED;
+          points.forEach(([x, y], index) => {
+            if (!TIPS.has(index)) return;
+            ctx.beginPath();
+            ctx.arc(x, y, 4.5, 0, Math.PI * 2);
             ctx.fill();
           });
 
-          const xs = points.map(([x]) => x);
-          const ys = points.map(([, y]) => y);
-          const left = Math.min(...xs) - 16;
-          const right = Math.max(...xs) + 16;
-          const top = Math.min(...ys) - 16;
-          const bottom = Math.max(...ys) + 16;
+          let left = Infinity;
+          let right = -Infinity;
+          let top = Infinity;
+          let bottom = -Infinity;
+          points.forEach(([x, y]) => {
+            left = Math.min(left, x);
+            right = Math.max(right, x);
+            top = Math.min(top, y);
+            bottom = Math.max(bottom, y);
+          });
+          left -= 16;
+          right += 16;
+          top -= 16;
+          bottom += 16;
 
-          ctx.lineWidth = 1.5;
-          brackets(ctx, left, top, right, bottom, 14);
-          ctx.fillStyle = line;
-          ctx.fillText(
-            `HAND ${String(handIndex + 1).padStart(2, "0")}`,
-            left,
-            top - 8,
-          );
+          ctx.lineWidth = 2;
+          brackets(ctx, left, top, right, bottom, 16);
+          if (hand.gesture?.label) {
+            ctx.fillStyle = line;
+            ctx.fillText(hand.gesture.label.toUpperCase(), left, top - 8);
+          }
 
           if (active && progress > 0) {
-            ctx.fillStyle = CYAN;
-            ctx.fillRect(
-              left,
-              bottom + 8,
-              ((right - left) * Math.min(progress, 100)) / 100,
-              3,
-            );
+            ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.fillRect(left, bottom + 8, right - left, 4);
+            ctx.fillStyle = RED;
+            ctx.fillRect(left, bottom + 8, ((right - left) * Math.min(progress, 100)) / 100, 4);
           }
         });
       },
@@ -158,7 +166,5 @@ export default function HandOverlay({ ref, video }) {
     [video],
   );
 
-  return (
-    <canvas ref={canvasRef} className={styles.overlay} aria-hidden="true" />
-  );
+  return <canvas ref={canvasRef} className={styles.overlay} aria-hidden="true" />;
 }

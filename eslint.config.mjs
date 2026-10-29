@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Salinan MediaPipe hasil scripts/copy-mediapipe-wasm.mjs.
+    "public/mediapipe/**",
   ]),
 ]);
 

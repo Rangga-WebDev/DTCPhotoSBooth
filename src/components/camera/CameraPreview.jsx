@@ -4,6 +4,8 @@
 
 import { useEffect, useImperativeHandle, useRef } from "react";
 
+const THUMB_WIDTH = 360;
+
 // Hanya elemen video (tampilan cermin); status & HUD digambar oleh halaman booth.
 export default function CameraPreview({ ref, onReady, onError, className }) {
   const videoRef = useRef(null);
@@ -101,29 +103,55 @@ export default function CameraPreview({ ref, onReady, onError, className }) {
       return videoRef.current;
     },
 
+    // Frame dibekukan saat itu juga (drawImage cepat); encode JPEG berjalan async lewat toBlob,
+    // jadi flash & suara shutter tidak tersendat seperti toDataURL 1080p.
     capture() {
       const video = videoRef.current;
 
-      if (!video || video.readyState < 2) {
+      if (!video || video.readyState < 2 || !video.videoWidth) {
         return null;
       }
 
+      const width = video.videoWidth;
+      const height = video.videoHeight;
       const canvas = document.createElement("canvas");
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = width;
+      canvas.height = height;
 
       const ctx = canvas.getContext("2d");
-
       if (!ctx) return null;
 
       // Hasil foto mengikuti tampilan cermin selfie
-      ctx.translate(canvas.width, 0);
+      ctx.translate(width, 0);
       ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, width, height);
 
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const thumbCanvas = document.createElement("canvas");
+      thumbCanvas.width = THUMB_WIDTH;
+      thumbCanvas.height = Math.round((THUMB_WIDTH * height) / width);
+      thumbCanvas
+        .getContext("2d")
+        ?.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
 
-      return canvas.toDataURL("image/jpeg", 0.92);
+      const blob = new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (result) =>
+            result
+              ? resolve(result)
+              : reject(new Error("Foto gagal disimpan dari kamera.")),
+          "image/jpeg",
+          0.92,
+        );
+      });
+      // Hindari unhandled rejection; penyimpan sesi tetap menerima error-nya.
+      blob.catch(() => {});
+
+      return {
+        blob,
+        thumb: thumbCanvas.toDataURL("image/jpeg", 0.72),
+        width,
+        height,
+      };
     },
 
     stop() {

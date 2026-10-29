@@ -1,22 +1,19 @@
 /** @format */
 
-import { LOGO, LOGO_MARK } from "../../data/brand";
+import { COLORS, MARK, MARK_INK } from "../../data/brand";
 
 export const FONT = {
-  display: '"Archivo Variable", "Arial Narrow", Arial, sans-serif',
-  body: '"Instrument Sans", "Segoe UI", Arial, sans-serif',
-  mono: '"IBM Plex Mono", Consolas, monospace',
+  display: '"Barlow Condensed", "Arial Narrow", Arial, sans-serif',
+  body: '"Barlow", "Segoe UI", Arial, sans-serif',
 };
 
 // Canvas tidak menunggu @font-face CSS; varian ini dimuat dulu sebelum menggambar.
 const FACES = [
-  '800 extra-condensed 64px "Archivo Variable"',
-  '900 expanded 64px "Archivo Variable"',
-  '700 64px "Archivo Variable"',
-  '400 32px "Instrument Sans"',
-  '600 32px "Instrument Sans"',
-  '500 32px "IBM Plex Mono"',
-  '600 32px "IBM Plex Mono"',
+  '800 64px "Barlow Condensed"',
+  '700 64px "Barlow Condensed"',
+  '600 64px "Barlow Condensed"',
+  '400 32px "Barlow"',
+  '600 32px "Barlow"',
 ];
 
 const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -36,7 +33,7 @@ const MONTHS = [
 ];
 
 let fontsReady = null;
-let logoReady = null;
+let markPaths = null;
 
 export function loadFonts() {
   if (typeof document === "undefined" || !document.fonts?.load) {
@@ -44,7 +41,7 @@ export function loadFonts() {
   }
   fontsReady ??= Promise.race([
     Promise.allSettled(
-      FACES.map((face) => document.fonts.load(face, "DTC 2026 Booth 0123")),
+      FACES.map((face) => document.fonts.load(face, "CIVIL IN ACTION 0123")),
     ),
     // Photocard tetap dibuat walau font lambat.
     new Promise((resolve) => setTimeout(resolve, 2500)),
@@ -52,13 +49,9 @@ export function loadFonts() {
   return fontsReady;
 }
 
-function loadImageElement(src) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Salah satu foto gagal dibuka."));
-    image.src = src;
-  });
+function getMarkPaths() {
+  markPaths ??= { red: new Path2D(MARK.red), ink: new Path2D(MARK.ink) };
+  return markPaths;
 }
 
 // Blob (IndexedDB) atau URL → ImageBitmap; resizeWidth untuk pratinjau kecil.
@@ -73,60 +66,6 @@ export async function loadPhotos(sources, { resizeWidth } = {}) {
       );
     }),
   );
-}
-
-// Latar JPEG logo (#F7F7F7) dibuang supaya logo bisa ditaruh di warna apa pun.
-function keyOutBackground(image, crop) {
-  const canvas = document.createElement("canvas");
-  canvas.width = crop.w;
-  canvas.height = crop.h;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(image, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
-
-  const pixels = ctx.getImageData(0, 0, crop.w, crop.h);
-  const data = pixels.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const distance = 247 - Math.min(data[i], data[i + 1], data[i + 2]);
-    const alpha = Math.max(0, Math.min(1, distance / 60));
-    if (alpha <= 0) {
-      data[i + 3] = 0;
-      continue;
-    }
-    for (let c = 0; c < 3; c++) {
-      data[i + c] = Math.max(
-        0,
-        Math.min(255, (data[i + c] - 247 * (1 - alpha)) / alpha),
-      );
-    }
-    data[i + 3] = Math.round(alpha * 255);
-  }
-  ctx.putImageData(pixels, 0, 0);
-  return canvas;
-}
-
-export function loadLogo() {
-  logoReady ??= loadImageElement(LOGO.src).then((image) => ({
-    full: keyOutBackground(image, {
-      x: 0,
-      y: 0,
-      w: LOGO.width,
-      h: LOGO.height,
-    }),
-    mark: keyOutBackground(image, LOGO_MARK),
-  }));
-  return logoReady;
-}
-
-function tint(source, color) {
-  const canvas = document.createElement("canvas");
-  canvas.width = source.width;
-  canvas.height = source.height;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(source, 0, 0);
-  ctx.globalCompositeOperation = "source-in";
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  return canvas;
 }
 
 export function getStamp(value, sessionNumber) {
@@ -182,21 +121,14 @@ const NO_TONE = { css: "" };
 
 // Semua primitif gambar yang dipakai desain. Ukuran dalam ruang kartu 1200 px.
 // tone = filter foto (lihat filters.js); hanya diterapkan di kit.photo.
-export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
+export function createKit(ctx, { width, height, stamp, tone = NO_TONE }) {
   const random = seeded(stamp.seed);
   // RNG terpisah: ganti filter tidak menggeser posisi ornamen acak desain.
   const toneRandom = seeded(stamp.seed + 7);
-  const tinted = new Map();
   let toneGrain = null;
 
-  function setFont({
-    size = 32,
-    weight = 700,
-    family = "display",
-    stretch = "normal",
-  }) {
-    ctx.font = `${weight} ${size}px ${FONT[family]}`;
-    if ("fontStretch" in ctx) ctx.fontStretch = stretch;
+  function setFont({ size = 32, weight = 700, family = "display" }) {
+    ctx.font = `${weight} ${size}px ${FONT[family] ?? FONT.display}`;
   }
 
   const kit = {
@@ -260,9 +192,27 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
       }
     },
 
+    polygon(points, fill, stroke, lineWidth = 2) {
+      ctx.beginPath();
+      points.forEach(([x, y], index) => {
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      }
+    },
+
     text(value, x, y, options = {}) {
       const {
-        color = "#050A12",
+        color = COLORS.black,
         align = "left",
         baseline = "alphabetic",
         spacing = 0,
@@ -273,8 +223,7 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
       ctx.textBaseline = baseline;
       ctx.letterSpacing = `${spacing}px`;
       // letterSpacing juga ditambahkan setelah huruf terakhir.
-      const shift =
-        align === "center" ? spacing / 2 : align === "right" ? spacing : 0;
+      const shift = align === "center" ? spacing / 2 : align === "right" ? spacing : 0;
       ctx.fillText(value, x + shift, y);
       ctx.letterSpacing = "0px";
     },
@@ -282,48 +231,45 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
     measure(value, options = {}) {
       setFont(options);
       ctx.letterSpacing = `${options.spacing ?? 0}px`;
-      const widthValue = ctx.measureText(value).width;
+      const measured = ctx.measureText(value).width;
       ctx.letterSpacing = "0px";
-      return widthValue;
+      return measured;
     },
 
     outlineText(value, x, y, options = {}) {
-      const { color = "#050A12", align = "left", lineWidth = 2 } = options;
+      const { color = COLORS.black, align = "left", lineWidth = 2 } = options;
       setFont(options);
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
+      ctx.lineJoin = "round";
       ctx.textAlign = align;
       ctx.textBaseline = "alphabetic";
       ctx.strokeText(value, x, y);
+    },
+
+    // Huruf ala stensil cat proyek: teks dibelah garis setinggi ± 45% huruf.
+    stencil(value, x, y, options = {}) {
+      const { size = 120, cut, cutRatio = 0.42 } = options;
+      kit.text(value, x, y, options);
+      if (!cut) return;
+      const textWidth = kit.measure(value, options);
+      const left =
+        options.align === "center"
+          ? x - textWidth / 2
+          : options.align === "right"
+            ? x - textWidth
+            : x;
+      kit.fill(cut, left - 4, y - size * 0.7 * cutRatio - size * 0.025, textWidth + 8, size * 0.05);
     },
 
     // Ukuran font terbesar yang muat di maxWidth.
     fit(value, maxWidth, options = {}) {
       let size = options.size ?? 200;
       const min = options.min ?? 16;
-      while (
-        size > min &&
-        kit.measure(value, { ...options, size }) > maxWidth
-      ) {
+      while (size > min && kit.measure(value, { ...options, size }) > maxWidth) {
         size -= Math.max(1, Math.round(size * 0.04));
       }
       return size;
-    },
-
-    wrap(value, maxWidth, options = {}) {
-      const lines = [];
-      let current = "";
-      value.split(" ").forEach((word) => {
-        const next = current ? `${current} ${word}` : word;
-        if (current && kit.measure(next, options) > maxWidth) {
-          lines.push(current);
-          current = word;
-        } else {
-          current = next;
-        }
-      });
-      if (current) lines.push(current);
-      return lines;
     },
 
     // Transform slot (miring di sekitar titik pusat) untuk bingkai + foto.
@@ -341,10 +287,7 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
     // bleed: gambar dilebihkan di tiap sisi (untuk blur, supaya tepinya tidak transparan).
     photo(image, slot, { radius = 0, filter = "", bleed = 0 } = {}) {
       const { x, y, w, h } = slot;
-      const scale = Math.max(
-        (w + bleed * 2) / image.width,
-        (h + bleed * 2) / image.height,
-      );
+      const scale = Math.max((w + bleed * 2) / image.width, (h + bleed * 2) / image.height);
       const drawWidth = image.width * scale;
       const drawHeight = image.height * scale;
 
@@ -377,10 +320,7 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
         }
         ctx.globalCompositeOperation = "source-over";
         if (tone.grain) {
-          toneGrain ??= ctx.createPattern(
-            grainTile(tone.grain, toneRandom),
-            "repeat",
-          );
+          toneGrain ??= ctx.createPattern(grainTile(tone.grain, toneRandom), "repeat");
           ctx.fillStyle = toneGrain;
           ctx.fillRect(x, y, w, h);
         }
@@ -414,26 +354,20 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
       ctx.restore();
     },
 
-    dots(color, step, radius, area = [0, 0, width, height]) {
-      const [x0, y0, w, h] = area;
-      ctx.fillStyle = color;
-      for (let y = y0 + step / 2; y < y0 + h; y += step) {
-        for (let x = x0 + step / 2; x < x0 + w; x += step) {
-          ctx.beginPath();
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    },
-
-    stripes(color, bandWidth, gap, angle = -45) {
+    // Pita pembatas proyek: garis diagonal dua warna di dalam kotak.
+    hazard(x, y, w, h, colorA, colorB, band = 28, angle = -45) {
       ctx.save();
-      ctx.fillStyle = color;
-      ctx.translate(width / 2, height / 2);
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+      ctx.fillStyle = colorB;
+      ctx.fillRect(x, y, w, h);
+      ctx.translate(x + w / 2, y + h / 2);
       ctx.rotate((angle * Math.PI) / 180);
-      const reach = Math.hypot(width, height);
-      for (let x = -reach; x < reach; x += bandWidth + gap) {
-        ctx.fillRect(x, -reach, bandWidth, reach * 2);
+      ctx.fillStyle = colorA;
+      const reach = Math.hypot(w, h);
+      for (let offset = -reach; offset < reach; offset += band * 2) {
+        ctx.fillRect(offset, -reach, band, reach * 2);
       }
       ctx.restore();
     },
@@ -442,35 +376,6 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
       ctx.save();
       ctx.fillStyle = ctx.createPattern(grainTile(strength, random), "repeat");
       ctx.fillRect(0, 0, width, height);
-      ctx.restore();
-    },
-
-    star(x, y, radius, fill, points = 5, inner = 0.45) {
-      ctx.beginPath();
-      for (let i = 0; i < points * 2; i++) {
-        const r = i % 2 ? radius * inner : radius;
-        const a = (Math.PI / points) * i - Math.PI / 2;
-        ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
-      }
-      ctx.closePath();
-      ctx.fillStyle = fill;
-      ctx.fill();
-    },
-
-    sparkle(x, y, radius, fill) {
-      kit.star(x, y, radius, fill, 4, 0.22);
-    },
-
-    heart(x, y, size, fill) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(size / 32, size / 32);
-      ctx.beginPath();
-      ctx.moveTo(0, 10);
-      ctx.bezierCurveTo(-26, -8, -12, -30, 0, -14);
-      ctx.bezierCurveTo(12, -30, 26, -8, 0, 10);
-      ctx.fillStyle = fill;
-      ctx.fill();
       ctx.restore();
     },
 
@@ -484,50 +389,57 @@ export function createKit(ctx, { width, height, stamp, logo, tone = NO_TONE }) {
       }
     },
 
-    // Logo DTC (latar sudah transparan); color = versi satu warna untuk latar gelap/berwarna.
-    logo({ x, y, w, variant = "mark", color, align = "left" }) {
-      if (!logo) return 0;
-      const source = logo[variant];
-      let image = source;
-      if (color) {
-        const key = `${variant}:${color}`;
-        if (!tinted.has(key)) tinted.set(key, tint(source, color));
-        image = tinted.get(key);
-      }
-      const h = (w * source.height) / source.width;
-      const left =
-        align === "center" ? x - w / 2 : align === "right" ? x - w : x;
-      ctx.drawImage(image, left, y, w, h);
-      return h;
+    // Garis ukur gambar teknik: ujung bergaris miring + label di tengah (latar label = bg).
+    dimension(x1, y, x2, label, { color = COLORS.black, bg, size = 20 } = {}) {
+      kit.line(x1, y, x2, y, color, 2);
+      [x1, x2].forEach((x) => {
+        kit.line(x, y - 16, x, y + 16, color, 2);
+        kit.line(x - 8, y + 8, x + 8, y - 8, color, 3);
+      });
+      if (!label) return;
+      const options = { family: "display", size, weight: 700, spacing: size * 0.1, color };
+      const labelWidth = kit.measure(label, options);
+      if (bg) kit.fill(bg, (x1 + x2) / 2 - labelWidth / 2 - 14, y - size, labelWidth + 28, size * 2);
+      kit.text(label, (x1 + x2) / 2, y + size * 0.35, { ...options, align: "center" });
     },
 
-    // Watermark wajib di tiap kartu: monogram + "DTC 2026 · DTCBooth".
+    // Logo CIA vektor. color = versi satu warna; tanpa color: C & A merah, i = ink.
+    logo({ x, y, w, color, ink = MARK_INK.light, align = "left" }) {
+      const scale = w / MARK.width;
+      const left = align === "center" ? x - w / 2 : align === "right" ? x - w : x;
+      const paths = getMarkPaths();
+      ctx.save();
+      ctx.translate(left, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = color ?? COLORS.red;
+      ctx.fill(paths.red);
+      ctx.fillStyle = color ?? ink;
+      ctx.fill(paths.ink);
+      ctx.restore();
+      return MARK.height * scale;
+    },
+
+    // Tanda kecil di tiap kartu: logo + "CIVIL IN ACTION · CIA PHOTOBOOTH".
     watermark({
       x,
       y,
-      color = "#050A12",
+      color = COLORS.black,
       align = "left",
       mark = true,
-      logoColor,
+      markColor,
+      markInk,
     }) {
-      const label = "DTC 2026 · DTCBooth";
-      const opts = {
-        size: 20,
-        weight: 500,
-        family: "mono",
-        spacing: 2.4,
-        color,
-      };
-      const labelWidth = kit.measure(label, opts);
-      const markWidth = mark ? 44 : 0;
+      const label = "CIVIL IN ACTION · CIA PHOTOBOOTH";
+      const options = { family: "display", size: 22, weight: 600, spacing: 3, color };
+      const labelWidth = kit.measure(label, options);
+      const markWidth = mark ? 30 : 0;
       const gap = mark ? 14 : 0;
       const total = markWidth + gap + labelWidth;
-      const left =
-        align === "center" ? x - total / 2 : align === "right" ? x - total : x;
+      const left = align === "center" ? x - total / 2 : align === "right" ? x - total : x;
       if (mark) {
-        kit.logo({ x: left, y: y - 26, w: markWidth, color: logoColor });
+        kit.logo({ x: left, y: y - 28, w: markWidth, color: markColor, ink: markInk });
       }
-      kit.text(label, left + markWidth + gap, y, opts);
+      kit.text(label, left + markWidth + gap, y, options);
     },
   };
 

@@ -3,7 +3,7 @@
 import EditorView from "../../components/editor/EditorView";
 
 export const metadata = {
-  title: "Final touch · DTCBooth",
+  title: "Ambil foto · CIA Photobooth",
 };
 
 export default async function EditorPage({ searchParams }) {

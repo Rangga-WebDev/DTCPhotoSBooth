@@ -1,120 +1,41 @@
 /** @format */
 
-// Diukur langsung dari public/logo/logoDTC.jpeg (latar JPEG #F7F7F7).
-export const LOGO = {
-  src: "/logo/logoDTC.jpeg",
-  width: 590,
-  height: 423,
-  background: "#F7F7F7",
-  alt: "DTC 2026, Discovery Technology Creative",
+// Identitas CIA (Civil In Action). Warna diambil langsung dari piksel logo resmi.
+export const BRAND = {
+  short: "CIA",
+  name: "Civil In Action",
+  product: "CIA Photobooth",
+  field: "Teknik Sipil",
+  tagline: "Photobooth AI Teknik Sipil",
 };
 
-// Area monogram DTC tanpa wordmark, plus sedikit ruang napas.
-export const LOGO_MARK = { x: 136, y: 16, w: 362, h: 256 };
+export const COLORS = {
+  red: "#F00C1C", // permukaan depan huruf C dan A
+  redStrong: "#E00B1A", // latar tombol, teks putih 5 : 1
+  redDeep: "#8E0A12", // sisi ekstrusi yang gelap
+  black: "#000000", // latar logo
+  charcoal: "#2C2C2E", // huruf i
+};
 
-// Wordmark "DISCOVERY TECHNOLOGY CREATIVE" + baris "2026".
-export const LOGO_WORDMARK = { x: 58, y: 288, w: 514, h: 84 };
+// Logo 3D resmi, latar hitam murni (#000) supaya menyatu dengan halaman gelap.
+export const LOGO = {
+  src: "/logo/cia-logo.jpg",
+  width: 473,
+  height: 542,
+  alt: "Logo CIA, Civil In Action",
+};
 
-// span = lebar kolom swatch di grid 12 / 8 kolom (halaman design system).
-export const DTC_COLORS = [
-  {
-    name: "Soft White",
-    token: "--dtc-paper",
-    hex: "#F7F9FB",
-    fg: "#050A12",
-    role: "Latar utama, 55–65% layar",
-    contrast: "Ink di atasnya 18.8 : 1",
-    span: 6,
-    spanMd: 8,
-  },
-  {
-    name: "Ink",
-    token: "--dtc-ink",
-    hex: "#050A12",
-    fg: "#F7F9FB",
-    role: "Teks, garis tegas, tombol sekunder",
-    contrast: "Paper di atasnya 18.8 : 1",
-    span: 3,
-    spanMd: 4,
-  },
-  {
-    name: "Midnight Navy",
-    token: "--dtc-navy",
-    hex: "#07152B",
-    fg: "#F7F9FB",
-    role: "Section gelap, 20–25% layar",
-    contrast: "Paper di atasnya 17.3 : 1",
-    span: 3,
-    spanMd: 4,
-  },
-  {
-    name: "Primary Blue",
-    token: "--dtc-blue",
-    hex: "#0878ED",
-    fg: "#FFFFFF",
-    role: "Aksen brand & display besar",
-    contrast: "Di paper 4.1 : 1, hanya teks ≥ 24px",
-    span: 4,
-    spanMd: 4,
-  },
-  {
-    name: "Deep Blue",
-    token: "--dtc-blue-deep",
-    hex: "#054BAE",
-    fg: "#FFFFFF",
-    role: "Tombol utama, teks biru kecil",
-    contrast: "Putih di atasnya 8.0 : 1",
-    span: 4,
-    spanMd: 4,
-  },
-  {
-    name: "Electric Blue",
-    token: "--dtc-blue-electric",
-    hex: "#009EF7",
-    fg: "#050A12",
-    role: "Aksen di permukaan gelap",
-    contrast: "Di navy 6.3 : 1",
-    span: 2,
-    spanMd: 2,
-  },
-  {
-    name: "Cyan",
-    token: "--dtc-cyan",
-    hex: "#12C8F4",
-    fg: "#050A12",
-    role: "Sinyal & status, maks. 5%",
-    contrast: "Di navy 9.2 : 1",
-    span: 2,
-    spanMd: 2,
-  },
-  {
-    name: "Tech Grey",
-    token: "--dtc-grey",
-    hex: "#DCE3EA",
-    fg: "#050A12",
-    role: "Garis & bidang pemisah",
-    contrast: "Dekoratif, bukan teks",
-    span: 4,
-    spanMd: 4,
-  },
-  {
-    name: "Muted Grey",
-    token: "--dtc-grey-muted",
-    hex: "#8D99A6",
-    fg: "#050A12",
-    role: "Meta di permukaan gelap",
-    contrast: "Di navy 6.3 : 1",
-    span: 4,
-    spanMd: 4,
-  },
-  {
-    name: "Meta Grey",
-    token: "--dtc-grey-text",
-    hex: "#5B6776",
-    fg: "#F7F9FB",
-    role: "Meta kecil di permukaan terang",
-    contrast: "Di paper 5.5 : 1",
-    span: 4,
-    spanMd: 8,
-  },
-];
+// Versi datar logo (viewBox 0 0 388 455) untuk ukuran kecil, photocard, dan latar terang.
+// red = heksagon "C" + huruf "A"; ink = huruf "i" (badan + titik).
+export const MARK = {
+  width: 388,
+  height: 455,
+  red: "M349 108.9L184 0L0 121.4V335.4L180 454.2V400.3L45 311.2V145.7L184 53.9L324.2 146.5ZM252 136L182 263.4V345H188.5L252 229.4L293.2 304.5H219.9L197.6 345H315.5L336.6 383.5H388Z",
+  ink: "M124 190L174 157V346L238 388.2V421.2L188 454.2V388.2L124 346ZM124 130L174 97V142L124 175Z",
+};
+
+// Warna huruf "i" di tiap latar: di latar gelap dibuat sedikit lebih terang supaya tetap terbaca.
+export const MARK_INK = {
+  dark: "#4A4A50",
+  light: "#1C1C1E",
+};

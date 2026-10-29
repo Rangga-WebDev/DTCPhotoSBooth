@@ -3,11 +3,17 @@
 // Jendela analisis dalam koordinat frame penuh (0–1). Lebar & tinggi memakai pecahan yang sama,
 // jadi rasio frame tetap dan landmark bisa dipetakan balik tanpa distorsi.
 const WIDE = { x: 0, y: 0, w: 1, h: 1 };
-const SCAN = ["wide", "center", "wide", "left", "wide", "right"];
+// Palm detector MediaPipe (input 192 px) sering melewatkan telapak kecil di frame penuh,
+// jadi saat kosong area zoom yang paling mungkin (tengah) dikunjungi tiap dua langkah.
+// Setelah tangan tertangkap, tracking landmark tetap jalan walau kembali ke wide.
+const SCAN = ["center", "left", "center", "right", "center", "wide"];
 const ANCHORS = { center: [0.5, 0.45], left: [0.3, 0.45], right: [0.7, 0.45] };
 const SCAN_SIZE = 0.58;
-const DWELL_MS = 1100;
-const LOST_MS = 1500;
+// Pindah area setelah 2 frame analisis (dan minimal 300 ms), bukan per detik,
+// supaya satu putaran pindai selesai cepat di laptop lambat maupun cepat.
+const DWELL_FRAMES = 2;
+const DWELL_MIN_MS = 300;
+const LOST_MS = 900;
 // Tangan < 14% tinggi frame dianggap jauh (± 1,7 m ke atas pada webcam 70°).
 const FAR_HAND = 0.14;
 // Zoom diatur agar tangan mengisi ± 25% jendela; lebih dari 45% berarti orangnya sudah dekat.
@@ -41,7 +47,7 @@ function box(points) {
 // Kotak gabungan semua tangan (untuk posisi zoom) + tinggi tangan terbesar (untuk jarak).
 export function boundsOf(hands) {
   const boxes = hands
-    .map((hand) => hand.landmarks ?? [])
+    .map((hand) => hand.points ?? [])
     .filter((points) => points.length)
     .map(box);
   if (!boxes.length) return null;
@@ -60,12 +66,13 @@ export function boundsOf(hands) {
   };
 }
 
-// Wide saat tangan dekat; zoom mengikuti tangan yang jauh; scan wide→tengah→kiri→kanan saat kosong.
+// Wide saat tangan dekat; zoom mengikuti tangan yang jauh; pindai tengah/kiri/kanan saat kosong.
 export function createRoiTracker() {
   let mode = "wide";
   let rect = WIDE;
-  let step = 0;
+  let step = -1;
   let stepSince = 0;
+  let stepFrames = 0;
   let lastSeen = -Infinity;
   let follow = null;
 
@@ -102,9 +109,11 @@ export function createRoiTracker() {
         }
       } else if (now - lastSeen > LOST_MS) {
         follow = null;
-        if (now - stepSince >= DWELL_MS) {
+        stepFrames += 1;
+        if (step < 0 || (stepFrames > DWELL_FRAMES && now - stepSince >= DWELL_MIN_MS)) {
           step = (step + 1) % SCAN.length;
           stepSince = now;
+          stepFrames = 1;
         }
         mode = SCAN[step];
       }

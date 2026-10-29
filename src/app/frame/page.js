@@ -3,7 +3,7 @@
 import FramePicker from "../../components/frame/FramePicker";
 
 export const metadata = {
-  title: "Choose your frame · DTCBooth",
+  title: "Pilih desain · CIA Photobooth",
 };
 
 export default async function FramePage({ searchParams }) {

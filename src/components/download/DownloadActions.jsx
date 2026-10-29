@@ -4,22 +4,16 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+import Icon from "../brand/Icon";
 import styles from "./download.module.css";
 import useNow from "./useNow";
 
 const subscribeNever = () => () => {};
 // Web Share hanya ada di HTTPS; di link Wi-Fi lokal (http) tombolnya disembunyikan.
-const canShare = () =>
-  window.isSecureContext && typeof navigator.share === "function";
+const canShare = () => window.isSecureContext && typeof navigator.share === "function";
 
-// Dirender langsung di grid layout: bar simpan menempel di bawah layar HP
-// selama photocard di atasnya masih terlihat.
-export default function DownloadActions({
-  imageUrl,
-  downloadUrl,
-  filename,
-  expiresAt,
-}) {
+// Tombol simpan menempel di bawah layar HP selama photocard masih terlihat.
+export default function DownloadActions({ imageUrl, downloadUrl, filename, expiresAt }) {
   const shareable = useSyncExternalStore(subscribeNever, canShare, () => false);
   const now = useNow();
   const expired = now !== null && now >= expiresAt;
@@ -49,8 +43,8 @@ export default function DownloadActions({
     try {
       await navigator.share(
         file
-          ? { files: [file], title: "Photocard DTCBooth" }
-          : { title: "Photocard DTCBooth", url: window.location.href },
+          ? { files: [file], title: "Photocard CIA Photobooth" }
+          : { title: "Photocard CIA Photobooth", url: window.location.href },
       );
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -63,37 +57,29 @@ export default function DownloadActions({
       <div className={styles.saveBar}>
         {expired ? (
           <p className={styles.expiredNote} role="status">
-            Masa aktif link ini baru saja habis, jadi photocard-nya sudah tidak
-            bisa diunduh. Muat ulang halaman untuk melihat statusnya.
+            Masa aktif link ini baru saja habis, jadi photocard-nya sudah tidak bisa diunduh.
+            Muat ulang halaman untuk melihat statusnya.
           </p>
         ) : (
           <>
             <a
-              className="dtc-btn dtc-btn--primary dtc-btn--lg dtc-btn--block"
+              className="cia-btn cia-btn--primary cia-btn--lg cia-btn--block"
               href={downloadUrl}
               download={filename}
             >
-              <span>Simpan photocard</span>
-              <span className="dtc-btn__arrow">
-                <i className="dtc-arrow dtc-arrow--down" aria-hidden="true" />
-              </span>
+              <Icon name="download" />
+              Simpan photocard
             </a>
             {shareable && (
-              <button
-                type="button"
-                className="dtc-btn dtc-btn--block"
-                onClick={handleShare}
-              >
-                <span>Bagikan</span>
-                <span className="dtc-btn__arrow">
-                  <i className="dtc-arrow dtc-arrow--ne" aria-hidden="true" />
-                </span>
+              <button type="button" className="cia-btn cia-btn--block" onClick={handleShare}>
+                <Icon name="share" />
+                Bagikan
               </button>
             )}
           </>
         )}
         {message && (
-          <p className={styles.error} role="alert">
+          <p className="cia-error" role="alert">
             {message}
           </p>
         )}
@@ -101,12 +87,7 @@ export default function DownloadActions({
 
       {!expired && (
         <div className={styles.more}>
-          <a
-            className={styles.textLink}
-            href={imageUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="cia-link" href={imageUrl} target="_blank" rel="noopener noreferrer">
             Buka ukuran penuh
           </a>
           <div className={styles.tips}>
@@ -118,8 +99,8 @@ export default function DownloadActions({
             </p>
             <p>
               <strong>Android</strong>
-              Tombol Simpan menaruh file di folder Download. Bisa juga tekan
-              lama fotonya, lalu Download gambar.
+              Tombol Simpan menaruh file di folder Download. Bisa juga tekan lama fotonya, lalu
+              Download gambar.
             </p>
           </div>
         </div>
