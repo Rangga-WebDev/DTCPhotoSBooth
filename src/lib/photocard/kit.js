@@ -1,6 +1,6 @@
 /** @format */
 
-import { COLORS, MARK, MARK_INK } from "../../data/brand";
+import { COLORS, HMS, MARK, MARK_INK } from "../../data/brand";
 
 export const FONT = {
   display: '"Barlow Condensed", "Arial Narrow", Arial, sans-serif',
@@ -32,7 +32,16 @@ const MONTHS = [
   "Desember",
 ];
 
+// Gambar raster untuk desain (logo HMS). Gagal dimuat → desain memakai gambar cadangan;
+// percobaan ulang baru setelah jeda supaya render beruntun (thumbnail) tidak ikut menunggu.
+const ART_SOURCES = { hms: HMS.logo.src };
+const ART_TIMEOUT_MS = 8000;
+const ART_RETRY_MS = 10_000;
+const art = {};
+
 let fontsReady = null;
+let artReady = null;
+let artRetryAt = 0;
 let markPaths = null;
 
 export function loadFonts() {
@@ -47,6 +56,36 @@ export function loadFonts() {
     new Promise((resolve) => setTimeout(resolve, 2500)),
   ]);
   return fontsReady;
+}
+
+async function loadArtwork(name, src) {
+  if (art[name]) return true;
+  try {
+    const signal =
+      typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(ART_TIMEOUT_MS) : undefined;
+    const response = await fetch(src, { signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    art[name] = await createImageBitmap(await response.blob());
+    return true;
+  } catch (error) {
+    console.warn(`Gambar photocard "${name}" gagal dimuat:`, error);
+    return false;
+  }
+}
+
+export function loadArt() {
+  if (typeof window === "undefined" || typeof createImageBitmap !== "function") {
+    return Promise.resolve();
+  }
+  if (!artReady && Date.now() < artRetryAt) return Promise.resolve();
+  artReady ??= Promise.all(
+    Object.entries(ART_SOURCES).map(([name, src]) => loadArtwork(name, src)),
+  ).then((loaded) => {
+    if (!loaded.includes(false)) return;
+    artReady = null;
+    artRetryAt = Date.now() + ART_RETRY_MS;
+  });
+  return artReady;
 }
 
 function getMarkPaths() {
@@ -327,6 +366,15 @@ export function createKit(ctx, { width, height, stamp, tone = NO_TONE }) {
       });
     },
 
+    // Gambar raster yang sudah dimuat loadArt(); null kalau belum/gagal.
+    art(name) {
+      return art[name] ?? null;
+    },
+
+    image(source, x, y, w, h) {
+      ctx.drawImage(source, x, y, w, h);
+    },
+
     shadow(color, blur, offsetY, draw) {
       ctx.save();
       ctx.shadowColor = color;
@@ -420,6 +468,7 @@ export function createKit(ctx, { width, height, stamp, tone = NO_TONE }) {
     },
 
     // Tanda kecil di tiap kartu: logo + "CIVIL IN ACTION · CIA PHOTOBOOTH".
+    // plate = warna papan di belakang tanda (untuk latar ramai seperti dinding bata).
     watermark({
       x,
       y,
@@ -428,6 +477,7 @@ export function createKit(ctx, { width, height, stamp, tone = NO_TONE }) {
       mark = true,
       markColor,
       markInk,
+      plate,
     }) {
       const label = "CIVIL IN ACTION · CIA PHOTOBOOTH";
       const options = { family: "display", size: 22, weight: 600, spacing: 3, color };
@@ -436,6 +486,7 @@ export function createKit(ctx, { width, height, stamp, tone = NO_TONE }) {
       const gap = mark ? 14 : 0;
       const total = markWidth + gap + labelWidth;
       const left = align === "center" ? x - total / 2 : align === "right" ? x - total : x;
+      if (plate) kit.roundRect(left - 28, y - 41, total + 56, 60, 6, plate);
       if (mark) {
         kit.logo({ x: left, y: y - 28, w: markWidth, color: markColor, ink: markInk });
       }

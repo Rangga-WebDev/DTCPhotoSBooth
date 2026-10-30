@@ -39,3 +39,25 @@ export const MARK_INK = {
   dark: "#4A4A50",
   light: "#1C1C1E",
 };
+
+// HMS-FT Unismuh Makassar (Himpunan Mahasiswa Sipil), untuk desain photocard HMS.
+// Logo resmi berupa raster bulat berlatar transparan; warnanya diambil dari piksel logo.
+export const HMS = {
+  name: "HMS-FT UNISMUH MAKASSAR",
+  short: "HMS-FT",
+  campus: "UNISMUH MAKASSAR",
+  long: "HIMPUNAN MAHASISWA SIPIL",
+  logo: {
+    src: "/logo/hms-ft-unismuh.png",
+    width: 768,
+    height: 768,
+    alt: "Logo HMS FT Unismuh Makassar",
+  },
+  colors: {
+    blue: "#0099CB", // cincin luar
+    red: "#DA251C", // lingkaran dalam
+    yellow: "#FFF303", // matahari
+    green: "#01923F",
+    black: "#1F1A17", // saluran
+  },
+};

@@ -29,7 +29,7 @@ Pengunjung berdiri di depan kamera, menunjukkan hand sign, dan kamera memotret s
 | Capture berbasis gesture | AI membaca 9 hand sign, menunggu tangan diam ± 1 detik, lalu hitungan mundur 3–2–1.                              |
 | AI di Web Worker         | Inferensi MediaPipe berjalan di thread terpisah, jadi video, countdown, dan flash tetap mulus.                   |
 | Petunjuk pintar          | Peringatan cahaya kurang, tangan terpotong di tepi, terlalu jauh, atau tangan masih bergerak.                    |
-| 10 desain teknik sipil   | Poster, Gambar Kerja, Site Pass, Proyek Berjalan, Struktur Baja, Jembatan, Survey, Beton Ekspos, Photostrip, Sampul. |
+| 13 desain photocard      | 10 desain CIA (Poster, Gambar Kerja, Site Pass, Proyek Berjalan, Struktur Baja, Jembatan, Survey, Beton Ekspos, Photostrip, Sampul) + 3 desain HMS-FT Unismuh Makassar (Lencana, Pengairan, Strip) berlogo resmi HMS. |
 | Filter foto              | Original, Soft, Clean, Cool, Film, dan B&W tanpa mengubah grafis desain.                                         |
 | Output siap cetak        | JPG 1200 × 1800 piksel, metadata 300 dpi, ukuran kertas 4R.                                                      |
 | QR untuk simpan foto     | Wi-Fi lokal, tunnel publik, atau domain website yang di-deploy. Link aktif 24 jam.                               |
@@ -42,7 +42,7 @@ Pengunjung berdiri di depan kamera, menunjukkan hand sign, dan kamera memotret s
 | Framework           | Next.js 16.3.6 (App Router, Turbopack)                     |
 | Antarmuka           | React 19.2.8, JavaScript, CSS Modules                      |
 | Pengenalan gesture  | MediaPipe Tasks Vision (WebAssembly) di Web Worker         |
-| Komposisi photocard | Canvas API, logo vektor (Path2D)                           |
+| Komposisi photocard | Canvas API, logo CIA vektor (Path2D), logo HMS-FT (PNG)    |
 | QR                  | qrcode.react                                               |
 | Penyimpanan sesi    | IndexedDB di browser booth                                 |
 | Penyimpanan JPG     | Folder `storage/photos` (laptop) atau Vercel Blob (deploy) |
@@ -75,22 +75,27 @@ Aset AI (model `public/models/gesture_recognizer.task`, WASM, dan `vision_bundle
 
 ## Deploy ke Vercel
 
-Dengan deploy, booth cukup membuka domain website di Chrome laptop (HTTPS, kamera langsung jalan), dan QR bisa dibuka pengunjung dari mana saja memakai data seluler.
+📘 **Tutorial lengkap langkah demi langkah** (GitHub → Vercel → Blob → aktivasi booth → uji coba → checklist hari H → troubleshooting): [docs/TUTORIAL-DEPLOY.md](docs/TUTORIAL-DEPLOY.md).
 
-1. **Import** repo ini di [vercel.com/new](https://vercel.com/new). Framework terdeteksi otomatis sebagai Next.js; tidak perlu mengubah build command.
-2. **Buat Blob store**: tab **Storage → Create → Blob**, pilih akses **Private**, lalu hubungkan ke project. Vercel otomatis menambahkan `BLOB_READ_WRITE_TOKEN`.
+Dengan deploy, booth cukup membuka domain website di Chrome laptop (HTTPS, kamera langsung jalan), dan QR bisa dibuka pengunjung dari mana saja memakai data seluler. Ringkasnya:
+
+1. Gabungkan kode ke branch **`main`** (Vercel men-deploy Production dari `main`), lalu **import** repo di [vercel.com/new](https://vercel.com/new). Framework terdeteksi otomatis sebagai Next.js; build command tidak perlu diubah.
+2. **Buat Blob store**: tab **Storage** → **Blob**, region **Singapore**, akses **Private**, lalu **Connect to Project**. Kredensial Blob (`BLOB_STORE_ID` untuk OIDC dan `BLOB_READ_WRITE_TOKEN`) ditambahkan otomatis.
 3. **Environment Variables** (Settings → Environment Variables):
 
-   | Variabel           | Nilai                                                                 |
-   | ------------------ | --------------------------------------------------------------------- |
-   | `BOOTH_ACCESS_KEY` | Kunci acak. **Wajib**: tanpa kunci ini upload foto ditolak di website publik. |
-   | `CRON_SECRET`      | Rahasia acak untuk cron pembersih foto kedaluwarsa.                   |
-   | `BLOB_ACCESS`      | Opsional. `private` (default) atau `public`, sesuai akses Blob store. |
+   | Variabel               | Nilai                                                                                 |
+   | ---------------------- | ------------------------------------------------------------------------------------- |
+   | `BOOTH_ACCESS_KEY`     | Kunci acak. **Wajib**: tanpa kunci ini upload foto ditolak di website publik.         |
+   | `CRON_SECRET`          | Rahasia acak untuk cron pembersih foto kedaluwarsa.                                   |
+   | `NEXT_PUBLIC_SITE_URL` | Disarankan: domain produksi, mis. `https://cia-photobooth.vercel.app`.                |
+   | `BLOB_ACCESS`          | Opsional. `private` (default) atau `public`, sesuai akses Blob store.                 |
 
-4. **Deploy**, lalu di laptop booth buka `https://domain-kamu/?key=KUNCI_BOOTH` **satu kali**. Kunci disimpan di browser itu dan langsung dihapus dari address bar.
+4. **Redeploy**, lalu di laptop booth buka `https://domain-kamu/?key=KUNCI_BOOTH` **satu kali**. Kunci disimpan di browser itu dan langsung dihapus dari address bar.
 5. Buka panel **Cek perangkat** di halaman kamera: Link QR = `WEBSITE`, Penyimpanan = `VERCEL BLOB`, Kunci booth = `OK`.
 
-Di Vercel, mode QR otomatis `site` dan memakai domain yang sedang dibuka (atau `NEXT_PUBLIC_SITE_URL` kalau diisi). [vercel.json](vercel.json) menjadwalkan `/api/cleanup` sekali sehari untuk menghapus foto yang sudah lewat 24 jam.
+Di Vercel, mode QR otomatis `site` dan memakai `NEXT_PUBLIC_SITE_URL` (atau domain yang sedang dibuka). [vercel.json](vercel.json) menjalankan fungsi server di Singapura (`sin1`, terdekat dari Makassar) dan menjadwalkan `/api/cleanup` sekali sehari untuk menghapus foto yang sudah lewat 24 jam.
+
+> Buka booth dan bagikan QR hanya lewat domain produksi. Deployment Preview dan URL deployment panjang (`nama-abc123-akun.vercel.app`) dilindungi login Vercel, jadi tidak bisa dibuka HP pengunjung.
 
 ## Konfigurasi QR & Environment
 
@@ -101,8 +106,8 @@ Semua variabel ada di [.env.example](.env.example). Nilai dibaca saat runtime; r
 | `NEXT_PUBLIC_DOWNLOAD_MODE` | `local`, `public`, atau `site`. Default: `site` di Vercel, `local` di laptop.                            |
 | `NEXT_PUBLIC_LOCAL_URL`     | Origin laptop yang bisa diakses HP di Wi-Fi yang sama, mis. `http://192.168.1.10:3000`.                  |
 | `NEXT_PUBLIC_PUBLIC_URL`    | Origin HTTPS tunnel (Cloudflare Tunnel, dsb.) ke `http://localhost:3000`, untuk mode `public`.           |
-| `NEXT_PUBLIC_SITE_URL`      | Domain website untuk mode `site`. Kosong = domain yang sedang dibuka.                                    |
-| `BLOB_READ_WRITE_TOKEN`     | Token Vercel Blob. Kalau ada, foto hasil disimpan di Blob, bukan di folder laptop.                       |
+| `NEXT_PUBLIC_SITE_URL`      | Domain website untuk mode `site`. Kosong = domain yang sedang dibuka. Di Vercel isi domain produksi.     |
+| `BLOB_READ_WRITE_TOKEN`     | Token Vercel Blob (di Vercel juga `BLOB_STORE_ID` + OIDC, otomatis). Kalau ada, foto disimpan di Blob.  |
 | `BLOB_ACCESS`               | `private` (default) atau `public`.                                                                       |
 | `PHOTO_STORAGE`             | Paksa `local` atau `blob`.                                                                               |
 | `BOOTH_ACCESS_KEY`          | Kunci upload; browser booth membuka `/?key=KUNCI` sekali. Wajib di mode `site` (tanpa kunci, upload ditolak). |
@@ -139,7 +144,9 @@ Beranda → Tutorial → Kamera → Pilih Desain + Filter → Scan QR / Cetak �
 
 ## Desain Photocard
 
-Semua desain ada di [src/lib/photocard/designs/civil.js](src/lib/photocard/designs/civil.js), berjudul besar **CIVIL IN ACTION**, dan otomatis menyesuaikan 1–6 foto:
+Semua desain otomatis menyesuaikan 1–6 foto dan dikelompokkan di halaman pilih desain.
+
+**Civil In Action**: [src/lib/photocard/designs/civil.js](src/lib/photocard/designs/civil.js), berjudul besar **CIVIL IN ACTION**:
 
 | Desain          | Tema                                                           |
 | --------------- | -------------------------------------------------------------- |
@@ -154,7 +161,15 @@ Semua desain ada di [src/lib/photocard/designs/civil.js](src/lib/photocard/desig
 | Photostrip      | Dua strip 2 × 6 inci dalam satu lembar 4R.                     |
 | Sampul          | Sampul majalah teknik sipil.                                   |
 
-Logo di photocard digambar sebagai vektor dari [src/data/brand.js](src/data/brand.js), jadi tajam di ukuran apa pun.
+**HMS-FT Unismuh Makassar**: [src/lib/photocard/designs/hms.js](src/lib/photocard/designs/hms.js), berlogo resmi HMS dan berwarna logo (biru `#0099CB`, merah `#DA251C`):
+
+| Desain        | Tema                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| HMS Lencana   | Latar biru, lencana HMS besar, judul HMS-FT, pita UNISMUH MAKASSAR, dinding bata. |
+| HMS Pengairan | Kertas gambar: potongan saluran irigasi, muka air, stasiun (STA), data hidrolis. |
+| HMS Strip     | Dua photostrip 2 × 6 inci berkepala biru dan berlogo HMS.                     |
+
+Logo CIA digambar sebagai vektor dari [src/data/brand.js](src/data/brand.js), jadi tajam di ukuran apa pun. Logo HMS-FT berupa PNG transparan 768 × 768 px di `public/logo/hms-ft-unismuh.png`; untuk menggantinya, timpa file itu dengan nama yang sama. Kalau logo gagal dimuat, desain HMS memakai lencana cadangan.
 
 ## Cetak 4R
 
@@ -195,8 +210,11 @@ Di Vercel, pembersihan berjalan otomatis lewat cron harian.
 ## Struktur Proyek
 
 ```text
+docs/
+  TUTORIAL-DEPLOY.md       Tutorial lengkap deploy ke Vercel
 public/
   logo/cia-logo.jpg        Logo resmi CIA (latar hitam)
+  logo/hms-ft-unismuh.png  Logo HMS-FT Unismuh Makassar (transparan)
   models/                  Model gesture MediaPipe
   workers/                 Web Worker AI gestur
   mediapipe/               WASM + vision_bundle.js (otomatis, tidak di-commit)
@@ -228,5 +246,6 @@ Perintah pengembangan: `npm run dev`, `npm run build`, `npm run start`, `npm run
 | QR lokal tidak terbuka di HP            | Cek IPv4 laptop, Wi-Fi yang sama, firewall, dan client isolation router.                            |
 | Upload gagal "Booth belum diaktifkan"   | Buka `/?key=KUNCI` sekali di browser booth (sama dengan `BOOTH_ACCESS_KEY`).                        |
 | Upload gagal di Vercel                  | Pastikan Blob store terhubung (`BLOB_READ_WRITE_TOKEN`) dan `BLOB_ACCESS` sesuai akses store.       |
+| HP diminta login Vercel saat buka QR    | QR memakai URL deployment yang dilindungi. Isi `NEXT_PUBLIC_SITE_URL` dengan domain produksi, deploy ulang. |
 | Editor: sesi tidak ditemukan            | Pakai browser yang sama dengan saat foto diambil; sesi tersimpan di IndexedDB perangkat itu.        |
 | Hasil cetak mengecil / ada margin       | Cek ukuran kertas 4 × 6 inci, skala 100%, margin, header/footer, dan opsi borderless.               |

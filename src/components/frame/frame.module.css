@@ -71,6 +71,32 @@
   gap: 12px;
 }
 
+.set {
+  display: grid;
+  gap: 10px;
+}
+
+.set + .set {
+  margin-top: 8px;
+}
+
+.setName {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--cia-text);
+  font-family: var(--cia-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.setName span {
+  color: var(--cia-text-dim);
+  font-size: 0.875rem;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));

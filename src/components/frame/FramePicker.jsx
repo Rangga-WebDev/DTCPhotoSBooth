@@ -12,6 +12,7 @@ import {
   DEFAULT_FILTER,
   FILTERS,
   PHOTOCARDS,
+  PHOTOCARD_GROUPS,
   getFilter,
   getPhotocard,
   loadPhotos,
@@ -192,28 +193,36 @@ export default function FramePicker({ sessionId }) {
 
             <div className={styles.group}>
               <p className="cia-label">Desain</p>
-              <div className={styles.grid} role="group" aria-label="Desain photocard">
-                {PHOTOCARDS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={styles.tile}
-                    aria-pressed={selected === item.id}
-                    onClick={() => setSelected(item.id)}
-                  >
-                    <span className={styles.thumb}>
-                      <canvas
-                        ref={(node) => {
-                          if (node) thumbs.current.set(item.id, node);
-                          else thumbs.current.delete(item.id);
-                        }}
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <span className={styles.tileName}>{item.name}</span>
-                  </button>
-                ))}
-              </div>
+              {PHOTOCARD_GROUPS.map((set) => (
+                <div key={set.id} className={styles.set}>
+                  <p id={`set-${set.id}`} className={styles.setName}>
+                    {set.name}
+                    <span className="cia-tnum">{set.cards.length}</span>
+                  </p>
+                  <div className={styles.grid} role="group" aria-labelledby={`set-${set.id}`}>
+                    {set.cards.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={styles.tile}
+                        aria-pressed={selected === item.id}
+                        onClick={() => setSelected(item.id)}
+                      >
+                        <span className={styles.thumb}>
+                          <canvas
+                            ref={(node) => {
+                              if (node) thumbs.current.set(item.id, node);
+                              else thumbs.current.delete(item.id);
+                            }}
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span className={styles.tileName}>{item.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
               <p className={styles.note}>{card.note}</p>
             </div>
 

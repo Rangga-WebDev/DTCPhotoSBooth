@@ -1,20 +1,29 @@
 /** @format */
 
 import { LAYOUTS, CARD_DPI, CARD_SIZE, CARD_WIDTH } from "./layouts";
-import { createKit, getStamp, loadFonts, loadPhotos } from "./kit";
+import { createKit, getStamp, loadArt, loadFonts, loadPhotos } from "./kit";
 import { getFilter } from "./filters";
 import civilDesigns from "./designs/civil";
+import hmsDesigns from "./designs/hms";
 
-const DESIGNS = civilDesigns;
+const GROUPS = [
+  { id: "cia", name: "Civil In Action", designs: civilDesigns },
+  { id: "hms", name: "HMS-FT Unismuh Makassar", designs: hmsDesigns },
+];
+const DESIGNS = GROUPS.flatMap(({ designs }) => designs);
 const BY_ID = new Map(DESIGNS.map((design) => [design.id, design]));
 
 export const DEFAULT_DESIGN = "cia-poster";
 
-export const PHOTOCARDS = DESIGNS.map(({ id, name, note, layout }) => ({
+const toCard = ({ id, name, note, layout }) => ({ id, name, note, layout });
+
+export const PHOTOCARDS = DESIGNS.map(toCard);
+
+// Desain per kelompok untuk tampilan pemilih (urutan sama dengan PHOTOCARDS).
+export const PHOTOCARD_GROUPS = GROUPS.map(({ id, name, designs }) => ({
   id,
   name,
-  note,
-  layout,
+  cards: designs.map(toCard),
 }));
 
 export function getPhotocard(id) {
@@ -23,7 +32,7 @@ export function getPhotocard(id) {
 }
 
 export function preparePhotocardAssets() {
-  return loadFonts();
+  return Promise.all([loadFonts(), loadArt()]);
 }
 
 // images = ImageBitmap hasil loadPhotos; scale < 1 untuk thumbnail cepat.
