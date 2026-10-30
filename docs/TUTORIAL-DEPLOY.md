@@ -91,9 +91,11 @@ Website sudah bisa dibuka, tapi upload foto dan QR **belum** jalan sampai langka
 2. Isi nama, misalnya `cia-photobooth-foto`.
 3. **Region**: pilih **Singapore (sin1)**, sama dengan region fungsi server.
 4. **Access**: pilih **Private**. Foto hanya bisa diambil lewat server photobooth. Pilihan akses **tidak bisa diubah** setelah store dibuat.
-5. Buka tab **Projects** milik store itu → **Connect to Project** → pilih project `cia-photobooth`, centang environment **Production** dan **Preview** → simpan.
+5. Di halaman store, bagian **Connections** → **Connect to Project** → pilih project `cia-photobooth`, centang environment **Production** dan **Preview** → **Connect**.
 
-Vercel otomatis menambahkan kredensial Blob ke project (`BLOB_STORE_ID` untuk autentikasi OIDC, plus `BLOB_READ_WRITE_TOKEN`). Aplikasi mendeteksi keduanya; tidak perlu menyalin token secara manual.
+Berhasil kalau tabel **Connections** menampilkan `cia-photobooth` dengan info `BLOB_STORE_ID` dan `BLOB_WEBHOOK_PUBLIC_KEY`, environment **Production, Preview**. Aplikasi otomatis memakai `BLOB_STORE_ID` (autentikasi OIDC), jadi tidak ada token yang perlu disalin.
+
+> Kotak oranye _"All connected projects use OIDC… Revoke Token"_ hanya saran keamanan. **Abaikan saja**. Kalau mau, token itu boleh di-revoke **setelah** langkah 7 (deploy ulang) dan uji coba berhasil, karena aplikasi tidak memakainya.
 
 ## 6. Isi environment variables
 
