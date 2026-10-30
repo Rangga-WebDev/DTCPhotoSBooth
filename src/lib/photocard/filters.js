@@ -25,7 +25,7 @@ export const FILTERS = [
   {
     id: "cool",
     name: "Cool",
-    note: "Nuansa biru dingin, senada dengan warna DTC.",
+    note: "Nuansa dingin kebiruan, seperti langit pagi di lokasi proyek.",
     css: "contrast(1.04) saturate(0.88)",
     tint: { color: "#0878ed", alpha: 0.3, mode: "soft-light" },
   },

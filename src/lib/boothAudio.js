@@ -1,6 +1,6 @@
 /**
- * DTCBOOTH — AUDIO SYSTEM
- *   File: src/lib/boothAudio.js
+ * CIA PHOTOBOOTH — AUDIO
+ *   Beep countdown, shutter, dan nada selesai (Web Audio, tanpa file suara).
  *
  * @format
  */

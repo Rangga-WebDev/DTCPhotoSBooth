@@ -1,37 +1,30 @@
 /** @format */
 
 import { LAYOUTS, CARD_DPI, CARD_SIZE, CARD_WIDTH } from "./layouts";
-import { createKit, getStamp, loadFonts, loadLogo, loadPhotos } from "./kit";
+import { createKit, getStamp, loadArt, loadFonts, loadPhotos } from "./kit";
 import { getFilter } from "./filters";
-import signature from "./designs/signature";
-import cuteCool from "./designs/cute-cool";
-import people from "./designs/people";
-import himpunan from "./designs/himpunan";
+import civilDesigns from "./designs/civil";
+import hmsDesigns from "./designs/hms";
 
-export const CATEGORIES = [
-  { id: "signature", name: "DTC Signature", note: "Identitas resmi DTC 2026" },
-  { id: "cute", name: "Cute", note: "Lembut, lucu, penuh stiker" },
-  { id: "cool", name: "Cool", note: "Gelap, tegas, ala editorial" },
-  { id: "couple", name: "Couple", note: "Buat berdua" },
-  { id: "friendship", name: "Friendship", note: "Buat bestie dan geng" },
-  { id: "group", name: "Group", note: "Rombongan besar" },
-  { id: "himpunan", name: "Himpunan", note: "HMS · HME · HMA · HMIF · HMPWK" },
+const GROUPS = [
+  { id: "cia", name: "Civil In Action", designs: civilDesigns },
+  { id: "hms", name: "HMS-FT Unismuh Makassar", designs: hmsDesigns },
 ];
-
-const DESIGNS = [...signature, ...cuteCool, ...people, ...himpunan];
+const DESIGNS = GROUPS.flatMap(({ designs }) => designs);
 const BY_ID = new Map(DESIGNS.map((design) => [design.id, design]));
 
-export const DEFAULT_DESIGN = "sig-poster";
+export const DEFAULT_DESIGN = "cia-poster";
 
-export const PHOTOCARDS = DESIGNS.map(
-  ({ id, name, category, note, layout }) => ({
-    id,
-    name,
-    category,
-    note,
-    layout,
-  }),
-);
+const toCard = ({ id, name, note, layout }) => ({ id, name, note, layout });
+
+export const PHOTOCARDS = DESIGNS.map(toCard);
+
+// Desain per kelompok untuk tampilan pemilih (urutan sama dengan PHOTOCARDS).
+export const PHOTOCARD_GROUPS = GROUPS.map(({ id, name, designs }) => ({
+  id,
+  name,
+  cards: designs.map(toCard),
+}));
 
 export function getPhotocard(id) {
   const design = BY_ID.get(id) ?? BY_ID.get(DEFAULT_DESIGN);
@@ -39,25 +32,21 @@ export function getPhotocard(id) {
 }
 
 export function preparePhotocardAssets() {
-  return Promise.all([loadFonts(), loadLogo().catch(() => null)]);
+  return Promise.all([loadFonts(), loadArt()]);
 }
 
-// images = ImageBitmap/Image hasil loadPhotos; scale < 1 untuk thumbnail cepat.
+// images = ImageBitmap hasil loadPhotos; scale < 1 untuk thumbnail cepat.
 export async function renderPhotocard(images, designId, options = {}) {
   if (!images?.length || images.length > 6) {
     throw new Error("Jumlah foto harus antara 1 sampai 6.");
   }
 
   const design = BY_ID.get(designId) ?? BY_ID.get(DEFAULT_DESIGN);
-  const [, logo] = await preparePhotocardAssets();
+  await preparePhotocardAssets();
   const { scale = 1, capturedAt, sessionNumber, filter, canvas } = options;
 
   const ratio = images[0].width / images[0].height || 16 / 9;
-  const layout = LAYOUTS[design.layout](
-    images.length,
-    ratio,
-    design.spacing(images.length),
-  );
+  const layout = LAYOUTS[design.layout](images.length, ratio, design.spacing(images.length));
 
   const target = canvas ?? document.createElement("canvas");
   target.width = Math.round(CARD_WIDTH * scale);
@@ -72,7 +61,6 @@ export async function renderPhotocard(images, designId, options = {}) {
     width: CARD_WIDTH,
     height: layout.height,
     stamp: getStamp(capturedAt, sessionNumber),
-    logo,
     tone: getFilter(filter),
   });
   design.draw(kit, images, layout);
@@ -97,38 +85,12 @@ export function renderFilterSwatch(image, filterId, canvas, { width, height }) {
   return canvas;
 }
 
-// Pengganti composePhotos lama: sumber = URL/Blob, hasil = canvas 4R 1200 × 1800 px.
-export async function composePhotocard(sources, designId, options = {}) {
-  const images = await loadPhotos(sources);
-  try {
-    return await renderPhotocard(images, designId, options);
-  } finally {
-    images.forEach((image) => image.close?.());
-  }
-}
-
 // Segmen JFIF APP0 bertanda 300 dpi: aplikasi cetak membaca 1200 × 1800 px sebagai 4 × 6 inci.
 const DPI_HIGH = CARD_DPI >> 8;
 const DPI_LOW = CARD_DPI & 0xff;
 const JFIF_300 = [
-  0xff,
-  0xe0,
-  0x00,
-  0x10,
-  0x4a,
-  0x46,
-  0x49,
-  0x46,
-  0x00,
-  0x01,
-  0x01,
-  0x01,
-  DPI_HIGH,
-  DPI_LOW,
-  DPI_HIGH,
-  DPI_LOW,
-  0x00,
-  0x00,
+  0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x01, DPI_HIGH,
+  DPI_LOW, DPI_HIGH, DPI_LOW, 0x00, 0x00,
 ];
 
 function withPrintDpi(bytes) {
@@ -150,8 +112,7 @@ function withPrintDpi(bytes) {
 export async function canvasToJpeg(canvas, quality = 0.95) {
   const blob = await new Promise((resolve, reject) => {
     canvas.toBlob(
-      (result) =>
-        result ? resolve(result) : reject(new Error("File JPG gagal dibuat.")),
+      (result) => (result ? resolve(result) : reject(new Error("File JPG gagal dibuat."))),
       "image/jpeg",
       quality,
     );
@@ -179,9 +140,8 @@ export async function printPhotocard(canvas) {
   const url = URL.createObjectURL(await canvasToJpeg(canvas));
   const frame = document.createElement("iframe");
   frame.setAttribute("aria-hidden", "true");
-  frame.style.cssText =
-    "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
-  frame.srcdoc = `<!doctype html><title>DTCBooth ${CARD_SIZE.name}</title><style>@page{size:4in 6in;margin:0}html,body{margin:0}img{display:block;width:4in;height:6in}</style><img src="${url}" alt="">`;
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+  frame.srcdoc = `<!doctype html><title>CIA Photobooth ${CARD_SIZE.name}</title><style>@page{size:4in 6in;margin:0}html,body{margin:0}img{display:block;width:4in;height:6in}</style><img src="${url}" alt="">`;
   printFrame = frame;
 
   const cleanup = () => {

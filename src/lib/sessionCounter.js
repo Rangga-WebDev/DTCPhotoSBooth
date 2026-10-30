@@ -2,8 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
-const KEY = "dtc-session-count";
-const EVENT = "dtc-session-count-change";
+const KEY = "cia-session-count";
+const EVENT = "cia-session-count-change";
 
 function subscribe(callback) {
   window.addEventListener("storage", callback);

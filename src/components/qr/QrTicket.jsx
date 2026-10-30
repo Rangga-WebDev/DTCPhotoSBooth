@@ -5,24 +5,24 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 
-import DtcLogo from "../brand/DtcLogo";
+import CiaMark from "../brand/CiaMark";
+import Icon from "../brand/Icon";
 import styles from "./qrTicket.module.css";
 
 const STEP_LABEL = {
   compress: "Menyiapkan JPG",
-  upload: "Mengunggah ke laptop booth",
+  upload: "Mengunggah photocard",
 };
 const INSTRUCTION = {
-  uploading:
-    "QR muncul di sini begitu photocard selesai diunggah ke laptop booth.",
-  error:
-    "Photocard-nya aman. Kamu tetap bisa mencetaknya atau menyimpannya ke laptop booth.",
+  uploading: "QR muncul di sini begitu photocard selesai diunggah.",
+  error: "Photocard-nya aman. Tetap bisa dicetak atau disimpan ke laptop booth.",
   expired: "Link lama sudah tidak bisa dibuka dari HP.",
 };
+const NETWORK_LABEL = { site: "Link website", public: "Link publik", local: "Wi-Fi booth" };
 
 // Teks sesuai alamat yang benar-benar dipakai QR (dikirim server).
 function readyInstruction(share) {
-  if (share.mode === "public") {
+  if (share.mode === "site" || share.mode === "public") {
     return "Scan pakai kamera HP, lalu ketuk link yang muncul. Bisa pakai data seluler, tidak perlu Wi-Fi booth.";
   }
   if (share.fallback) {
@@ -30,8 +30,6 @@ function readyInstruction(share) {
   }
   return "Scan pakai kamera HP, lalu ketuk link yang muncul. HP harus satu Wi-Fi dengan laptop booth.";
 }
-
-const NETWORK_LABEL = { public: "Link publik", local: "Wi-Fi booth" };
 
 function useNow(interval) {
   const [now, setNow] = useState(() => Date.now());
@@ -51,18 +49,12 @@ function formatLeft(ms) {
 
 function formatUntil(value) {
   const date = new Date(value);
-  const day = date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-  });
-  const time = date.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const day = date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  const time = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   return `${day} ${time}`;
 }
 
-// share: { status: "uploading" | "ready" | "error", step, id, url, expiresAt, error }
+// share: { status: "uploading" | "ready" | "error", step, id, url, mode, fallback, expiresAt, error }
 export default function QrTicket({ share, details, onRetry }) {
   const now = useNow(15000);
   const [copied, setCopied] = useState(false);
@@ -95,12 +87,10 @@ export default function QrTicket({ share, details, onRetry }) {
         aria-busy={status === "uploading"}
       >
         <header className={styles.band}>
-          <DtcLogo variant="mark" width={26} plate decorative />
-          <span className={styles.brand}>DTCBooth</span>
+          <CiaMark width={22} tone="mono" />
+          <span className={styles.brand}>CIA Photobooth</span>
           <span className={styles.bandMeta}>
-            {status === "ready"
-              ? `DTC 2026 · ${NETWORK_LABEL[share.mode] ?? "Digital ticket"}`
-              : "DTC 2026 · Digital ticket"}
+            {status === "ready" ? (NETWORK_LABEL[share.mode] ?? "QR") : "QR photocard"}
           </span>
         </header>
 
@@ -118,46 +108,41 @@ export default function QrTicket({ share, details, onRetry }) {
             </p>
           </div>
 
-          <div className={`dtc-corners ${styles.codeFrame}`}>
-            <div className={styles.code}>
-              {status === "ready" && (
-                <QRCodeSVG
-                  value={share.url}
-                  size={216}
-                  level="M"
-                  marginSize={2}
-                  bgColor="#FFFFFF"
-                  fgColor="#050A12"
-                  title="QR photocard DTCBooth"
-                  className={styles.qr}
-                />
-              )}
-              {status === "uploading" && (
-                <div className={styles.wait} role="status">
-                  <i className={styles.scan} aria-hidden="true" />
-                  <span>{STEP_LABEL[share.step] ?? "Menyiapkan QR"}…</span>
-                </div>
-              )}
-              {status === "error" && (
-                <div className={styles.fail} role="alert">
-                  <strong>QR gagal dibuat.</strong>
-                  <span>{share.error}</span>
-                  <button
-                    type="button"
-                    className="dtc-btn dtc-btn--sm dtc-btn--primary"
-                    onClick={onRetry}
-                  >
-                    <span>Coba lagi</span>
-                  </button>
-                </div>
-              )}
-              {status === "expired" && (
-                <div className={styles.fail} role="status">
-                  <strong>Link sudah kedaluwarsa.</strong>
-                  <span>Buat photocard lagi untuk dapat QR baru.</span>
-                </div>
-              )}
-            </div>
+          <div className={styles.code}>
+            {status === "ready" && (
+              <QRCodeSVG
+                value={share.url}
+                size={220}
+                level="M"
+                marginSize={2}
+                bgColor="#FFFFFF"
+                fgColor="#000000"
+                title="QR photocard CIA Photobooth"
+                className={styles.qr}
+              />
+            )}
+            {status === "uploading" && (
+              <div className={styles.wait} role="status">
+                <i className={styles.spinner} aria-hidden="true" />
+                <span>{STEP_LABEL[share.step] ?? "Menyiapkan QR"}…</span>
+              </div>
+            )}
+            {status === "error" && (
+              <div className={styles.fail} role="alert">
+                <strong>QR gagal dibuat.</strong>
+                <span>{share.error}</span>
+                <button type="button" className="cia-btn cia-btn--sm cia-btn--primary" onClick={onRetry}>
+                  <Icon name="refresh" />
+                  Coba lagi
+                </button>
+              </div>
+            )}
+            {status === "expired" && (
+              <div className={styles.fail} role="status">
+                <strong>Link sudah kedaluwarsa.</strong>
+                <span>Buat photocard lagi untuk dapat QR baru.</span>
+              </div>
+            )}
           </div>
 
           <p
@@ -168,19 +153,17 @@ export default function QrTicket({ share, details, onRetry }) {
           </p>
         </div>
 
-        <div className={styles.perforation} aria-hidden="true" />
-
         <dl className={styles.stub}>
           <div>
             <dt>Photo ID</dt>
             <dd>{photoId}</dd>
           </div>
           <div>
-            <dt>Berlaku sampai</dt>
+            <dt>Berlaku s.d.</dt>
             <dd>{share.expiresAt ? formatUntil(share.expiresAt) : "—"}</dd>
           </div>
           <div>
-            <dt>Sisa waktu</dt>
+            <dt>Sisa</dt>
             <dd>
               {status === "ready"
                 ? formatLeft(share.expiresAt - now)
@@ -195,31 +178,18 @@ export default function QrTicket({ share, details, onRetry }) {
       {status === "ready" && (
         <>
           <div className={styles.actions}>
-            <button
-              type="button"
-              className="dtc-btn dtc-btn--sm dtc-btn--block"
-              onClick={copyLink}
-            >
-              <span aria-live="polite">
-                {copied ? "Link disalin" : "Salin link"}
-              </span>
+            <button type="button" className="cia-btn cia-btn--sm" onClick={copyLink}>
+              <Icon name="copy" />
+              <span aria-live="polite">{copied ? "Tersalin" : "Salin link"}</span>
             </button>
-            <a
-              href={share.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="dtc-btn dtc-btn--sm dtc-btn--block"
-            >
-              <span>Buka link</span>
-              <span className="dtc-btn__arrow">
-                <i className="dtc-arrow dtc-arrow--ne" aria-hidden="true" />
-              </span>
+            <a href={share.url} target="_blank" rel="noopener noreferrer" className="cia-btn cia-btn--sm">
+              <Icon name="external" />
+              Buka link
             </a>
           </div>
           <p className={styles.privacy}>
             Siapa pun yang punya link ini bisa membuka photocard-nya sampai{" "}
-            {formatUntil(share.expiresAt)}. Setelah itu link tidak bisa dibuka
-            lagi.
+            {formatUntil(share.expiresAt)}. Setelah itu link tidak bisa dibuka lagi.
           </p>
         </>
       )}

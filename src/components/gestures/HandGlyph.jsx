@@ -178,7 +178,7 @@ export default function HandGlyph({ pose, className = "" }) {
   return (
     <svg
       viewBox="0 0 64 64"
-      className={`dtc-hand ${className}`.trim()}
+      className={`cia-hand ${className}`.trim()}
       aria-hidden="true"
       focusable="false"
     >
@@ -194,7 +194,7 @@ export default function HandGlyph({ pose, className = "" }) {
           cx={x}
           cy={y}
           r={2.3}
-          className="dtc-hand__origin"
+          className="cia-hand__origin"
         />
       ))}
       {glyph.tips.map(([x, y]) => (
@@ -203,7 +203,7 @@ export default function HandGlyph({ pose, className = "" }) {
           cx={x}
           cy={y}
           r={2.6}
-          className="dtc-hand__tip"
+          className="cia-hand__tip"
         />
       ))}
     </svg>

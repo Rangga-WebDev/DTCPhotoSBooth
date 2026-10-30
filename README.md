@@ -1,286 +1,251 @@
 <!-- @format -->
 
-# DTCBooth
+# CIA Photobooth
 
-**AI photobooth untuk Teknik Fest dan DTC 2026 - Discovery Technology Creative.**
+**Photobooth AI untuk CIA — Civil In Action, Teknik Sipil.**
 
-DTCBooth adalah aplikasi photobooth berbasis web yang memungkinkan pengunjung mengambil foto menggunakan gesture tangan, memilih desain photocard, menerapkan filter, lalu mencetak hasilnya pada kertas 4R atau mengunduhnya melalui QR. Aplikasi dirancang untuk dioperasikan dari laptop booth dengan webcam dan printer foto.
+Pengunjung berdiri di depan kamera, menunjukkan hand sign, dan kamera memotret sendiri. Setelah itu pengunjung memilih desain photocard bertema teknik sipil, lalu mengambil hasilnya lewat **QR** di HP atau mencetaknya ukuran **4R**. Aplikasi bisa dijalankan di laptop booth atau **di-deploy sebagai website** (Vercel).
 
 ## Daftar Isi
 
 - [Fitur](#fitur)
 - [Teknologi](#teknologi)
-- [Prasyarat](#prasyarat)
-- [Instalasi](#instalasi)
-- [Konfigurasi QR](#konfigurasi-qr)
+- [Menjalankan di Laptop Booth](#menjalankan-di-laptop-booth)
+- [Deploy ke Vercel](#deploy-ke-vercel)
+- [Konfigurasi QR & Environment](#konfigurasi-qr--environment)
 - [Alur Penggunaan](#alur-penggunaan)
+- [AI Hand Tracking](#ai-hand-tracking)
+- [Desain Photocard](#desain-photocard)
 - [Cetak 4R](#cetak-4r)
 - [Operasional Booth](#operasional-booth)
 - [Penyimpanan dan Privasi](#penyimpanan-dan-privasi)
 - [Struktur Proyek](#struktur-proyek)
-- [Pengembangan](#pengembangan)
 - [Troubleshooting](#troubleshooting)
 
 ## Fitur
 
-| Fitur                    | Keterangan                                                                                               |
-| ------------------------ | -------------------------------------------------------------------------------------------------------- |
-| Capture berbasis gesture | Deteksi tangan di browser, konfirmasi gesture, dan countdown sebelum pengambilan foto.                   |
-| Format sesi fleksibel    | Pilihan 1 hingga 6 foto dalam satu sesi.                                                                 |
-| Desain photocard         | 27 desain dalam kategori DTC Signature, Cute, Cool, Couple, Friendship, Group, dan Himpunan.             |
-| Filter foto              | Pilihan Original, Soft, Clean, Cool, Film, dan B&W tanpa mengubah grafis desain.                         |
-| Output siap cetak        | JPG 1200 x 1800 piksel, metadata 300 dpi, ukuran kertas 4R.                                              |
-| Photostrip ganda         | Dua strip identik berukuran 2 x 6 inci dalam satu lembar 4R, dilengkapi garis potong.                    |
-| Distribusi melalui QR    | Mode Wi-Fi lokal atau URL publik, dengan fallback ke jaringan lokal ketika tunnel tidak dapat dihubungi. |
-| Operasional kiosk        | Indikator kesiapan booth, alur pengunjung berikutnya, dan skrip pemeriksaan sebelum acara.               |
+| Fitur                    | Keterangan                                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Capture berbasis gesture | AI membaca 9 hand sign, menunggu tangan diam ± 1 detik, lalu hitungan mundur 3–2–1.                              |
+| AI di Web Worker         | Inferensi MediaPipe berjalan di thread terpisah, jadi video, countdown, dan flash tetap mulus.                   |
+| Petunjuk pintar          | Peringatan cahaya kurang, tangan terpotong di tepi, terlalu jauh, atau tangan masih bergerak.                    |
+| 13 desain photocard      | 10 desain CIA (Poster, Gambar Kerja, Site Pass, Proyek Berjalan, Struktur Baja, Jembatan, Survey, Beton Ekspos, Photostrip, Sampul) + 3 desain HMS-FT Unismuh Makassar (Lencana, Pengairan, Strip) berlogo resmi HMS. |
+| Filter foto              | Original, Soft, Clean, Cool, Film, dan B&W tanpa mengubah grafis desain.                                         |
+| Output siap cetak        | JPG 1200 × 1800 piksel, metadata 300 dpi, ukuran kertas 4R.                                                      |
+| QR untuk simpan foto     | Wi-Fi lokal, tunnel publik, atau domain website yang di-deploy. Link aktif 24 jam.                               |
+| Siap deploy              | Penyimpanan otomatis pindah ke Vercel Blob saat di-deploy; upload dilindungi kunci booth.                        |
 
 ## Teknologi
 
-| Komponen            | Teknologi                                        |
-| ------------------- | ------------------------------------------------ |
-| Framework           | Next.js 16.3.6, App Router                       |
-| Antarmuka           | React 19.2.8, JavaScript, CSS Modules            |
-| Pengenalan gesture  | MediaPipe Tasks Vision, WebAssembly              |
-| Komposisi photocard | Canvas API                                       |
-| QR                  | qrcode.react                                     |
-| Penyimpanan sesi    | IndexedDB pada browser booth                     |
-| Penyimpanan JPG     | Filesystem pada server Node.js                   |
-| Tipografi           | Archivo Variable, Instrument Sans, IBM Plex Mono |
+| Komponen            | Teknologi                                                  |
+| ------------------- | ---------------------------------------------------------- |
+| Framework           | Next.js 16.3.6 (App Router, Turbopack)                     |
+| Antarmuka           | React 19.2.8, JavaScript, CSS Modules                      |
+| Pengenalan gesture  | MediaPipe Tasks Vision (WebAssembly) di Web Worker         |
+| Komposisi photocard | Canvas API, logo CIA vektor (Path2D), logo HMS-FT (PNG)    |
+| QR                  | qrcode.react                                               |
+| Penyimpanan sesi    | IndexedDB di browser booth                                 |
+| Penyimpanan JPG     | Folder `storage/photos` (laptop) atau Vercel Blob (deploy) |
+| Tipografi           | Barlow Condensed (judul) dan Barlow (teks)                 |
 
-## Prasyarat
+Warna diambil langsung dari logo: merah `#F00C1C` di atas hitam `#000000`, huruf "i" abu arang.
 
-- Node.js **20.9 atau lebih baru**; gunakan versi LTS yang masih didukung.
-- npm dan Git untuk instalasi proyek.
-- Browser modern dengan dukungan webcam, Canvas, dan WebAssembly. Chrome atau Edge direkomendasikan untuk laptop booth.
-- Webcam internal atau USB dengan pencahayaan yang memadai.
-- Printer foto dan kertas **4R / 4 x 6 inci** untuk pencetakan fisik.
-- Jaringan Wi-Fi yang sama untuk QR lokal, atau koneksi internet dan tunnel HTTPS untuk QR publik.
+## Menjalankan di Laptop Booth
 
-> Kamera membutuhkan secure context. Jalankan antarmuka booth melalui `http://localhost:3000` pada laptop, atau gunakan HTTPS. Alamat HTTP berbasis IP LAN digunakan untuk unduhan dari HP, bukan untuk membuka kamera booth.
-
-## Instalasi
-
-### 1. Unduh Proyek
+Prasyarat: Node.js **20.9+**, Chrome atau Edge, webcam, dan (opsional) printer foto 4R.
 
 ```sh
 git clone https://github.com/Rangga-WebDev/DTCPhotoSBooth.git
 cd DTCPhotoSBooth
 npm install
-```
-
-### 2. Konfigurasi Environment
-
-Buat konfigurasi environment di root proyek. Contoh untuk mode QR lokal:
-
-```dotenv
-# .env.local
-NEXT_PUBLIC_DOWNLOAD_MODE=local
-NEXT_PUBLIC_LOCAL_URL=http://192.168.1.10:3000
-```
-
-Ganti `192.168.1.10` dengan IPv4 adapter Wi-Fi laptop booth. Di Windows, alamat tersebut dapat diperiksa menggunakan `ipconfig`. Jangan gunakan `localhost`, `127.0.0.1`, atau `0.0.0.0` sebagai alamat QR karena HP tidak dapat mengakses laptop melalui alamat tersebut.
-
-### 3. Jalankan Aplikasi
-
-```sh
+copy .env.example .env.local   # lalu isi NEXT_PUBLIC_LOCAL_URL
 npm run dev -- --hostname 0.0.0.0
 ```
 
-Buka [http://localhost:3000](http://localhost:3000) pada laptop booth dan izinkan akses kamera.
-
-Model gesture tersedia pada [public/models/gesture_recognizer.task](public/models/gesture_recognizer.task). Aset WebAssembly MediaPipe disalin otomatis dari dependency sebelum `dev` dan `build` oleh [scripts/copy-mediapipe-wasm.mjs](scripts/copy-mediapipe-wasm.mjs).
-
-## Konfigurasi QR
-
-| Variabel                    | Fungsi                                                                                                        |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_DOWNLOAD_MODE` | `local` atau `public`. Default: `local`.                                                                      |
-| `NEXT_PUBLIC_LOCAL_URL`     | Origin laptop yang dapat diakses dari HP; wajib untuk mode lokal dan disarankan sebagai fallback mode publik. |
-| `NEXT_PUBLIC_PUBLIC_URL`    | Origin HTTPS publik yang meneruskan trafik ke server booth; wajib untuk mode publik.                          |
-| `NEXT_PUBLIC_BOOTH_URL`     | Nama konfigurasi lama, digunakan apabila `NEXT_PUBLIC_LOCAL_URL` belum diisi.                                 |
-
-Gunakan origin saja, tanpa path seperti `/d` atau `/editor`.
-
-### Mode Lokal
-
-HP dan laptop harus terhubung ke jaringan yang sama. Pastikan firewall mengizinkan koneksi ke port aplikasi pada jaringan booth dan router tidak menerapkan client isolation.
-
-Mode lokal tidak membutuhkan tunnel publik. Pengunjung tidak dapat membuka QR lokal hanya dengan data seluler.
-
-### Mode Publik
-
-Contoh konfigurasi:
-
-```dotenv
-# .env.local
-NEXT_PUBLIC_DOWNLOAD_MODE=public
-NEXT_PUBLIC_LOCAL_URL=http://192.168.1.10:3000
-NEXT_PUBLIC_PUBLIC_URL=https://booth.example.com
-```
-
-Gunakan URL tunnel yang benar-benar aktif, misalnya dari Cloudflare Tunnel, dengan upstream ke `http://localhost:3000`. `booth.example.com` hanya contoh, bukan layanan yang disediakan proyek.
-
-Server memeriksa apakah URL publik mengarah ke proses booth yang sama. Jika tunnel tidak dapat dihubungi, QR baru menggunakan alamat lokal apabila konfigurasi fallback valid. QR yang sudah dibuat tidak berubah otomatis ketika koneksi atau URL tunnel berubah.
-
-Konfigurasi alamat QR dibaca saat runtime. Restart server setelah mengubah nilainya. Perubahan origin saat menggunakan development server juga memerlukan restart.
-
-## Alur Penggunaan
-
-```text
-Beranda -> Tutorial -> Booth -> Pilih Frame -> Editor -> Cetak / QR -> Sesi Berikutnya
-```
-
-1. Pilih jumlah foto untuk sesi.
-2. Ikuti tutorial dan berikan izin akses kamera.
-3. Tunjukkan gesture tangan dengan stabil untuk memulai countdown.
-4. Setelah seluruh foto diambil, pilih desain photocard.
-5. Atur filter dan pilih **Buat photocard**.
-6. Pilih **Cetak 4R**, **Simpan ke laptop**, atau scan QR untuk mengunduh dari HP.
-7. Pastikan pengunjung sudah menerima hasilnya sebelum memulai sesi berikutnya.
-
-Gesture diproses di browser laptop. Sesi foto disimpan di IndexedDB, sedangkan hasil JPG akhir diunggah ke server booth untuk unduhan melalui QR.
-
-## Cetak 4R
-
-Seluruh photocard menggunakan spesifikasi berikut:
-
-| Parameter     | Nilai                    |
-| ------------- | ------------------------ |
-| Ukuran kertas | 4R / 4 x 6 inci          |
-| Ukuran fisik  | 101,6 x 152,4 mm         |
-| Resolusi file | 1200 x 1800 piksel       |
-| Density JPG   | 300 dpi pada kedua sumbu |
-| Orientasi     | Portrait, rasio 2:3      |
-
-Tombol **Cetak 4R** membuka dialog cetak browser dengan halaman 4 x 6 inci tanpa margin. Pilih ukuran kertas yang sama pada driver printer, nonaktifkan header/footer, dan gunakan skala 100% atau pengaturan default yang tidak mengecilkan gambar.
-
-Untuk cetak penuh sampai tepi, aktifkan **borderless** jika printer mendukungnya. Driver tertentu memperbesar gambar pada mode borderless; cetak satu sampel untuk memastikan teks dan elemen tepi tidak terpotong.
-
-Desain Photostrip menghasilkan dua strip dalam satu lembar. Potong di sepanjang garis tengah setelah pencetakan.
-
-> Aplikasi tidak mengendalikan driver atau antrean printer secara langsung. Dialog cetak bukan bukti bahwa printer telah menyelesaikan pencetakan. File yang dibuat sebelum pembaruan 4R juga tidak dikonversi ulang secara otomatis.
-
-## Operasional Booth
-
-### Jalankan Build Produksi
-
-Jalankan dari root proyek:
+Buka [http://localhost:3000](http://localhost:3000) di laptop booth dan izinkan akses kamera. Untuk acara, pakai build produksi:
 
 ```sh
 npm run build
 npm run start -- --hostname 0.0.0.0
 ```
 
-Gunakan proses Node.js yang tetap aktif selama acara. Laptop tidak boleh masuk sleep saat booth atau unduhan pengunjung masih digunakan.
+> Kamera butuh secure context: buka antarmuka booth lewat `http://localhost:3000` atau HTTPS. Alamat IP LAN (`http://192.168…`) dipakai HP untuk mengunduh foto, bukan untuk membuka kamera.
 
-### Pemeriksaan Sebelum Acara
+Aset AI (model `public/models/gesture_recognizer.task`, WASM, dan `vision_bundle.js` untuk worker) disalin otomatis ke `public/mediapipe/` oleh [scripts/copy-mediapipe-wasm.mjs](scripts/copy-mediapipe-wasm.mjs) sebelum `dev` dan `build`, jadi booth tetap jalan tanpa internet.
 
-Dengan server sudah berjalan, buka terminal terpisah dan jalankan:
+## Deploy ke Vercel
+
+📘 **Tutorial lengkap langkah demi langkah** (GitHub → Vercel → Blob → aktivasi booth → uji coba → checklist hari H → troubleshooting): [docs/TUTORIAL-DEPLOY.md](docs/TUTORIAL-DEPLOY.md).
+
+Dengan deploy, booth cukup membuka domain website di Chrome laptop (HTTPS, kamera langsung jalan), dan QR bisa dibuka pengunjung dari mana saja memakai data seluler. Ringkasnya:
+
+1. Gabungkan kode ke branch **`main`** (Vercel men-deploy Production dari `main`), lalu **import** repo di [vercel.com/new](https://vercel.com/new). Framework terdeteksi otomatis sebagai Next.js; build command tidak perlu diubah.
+2. **Buat Blob store**: tab **Storage** → **Blob**, region **Singapore**, akses **Private**, lalu **Connect to Project**. Kredensial Blob (`BLOB_STORE_ID` untuk OIDC dan `BLOB_READ_WRITE_TOKEN`) ditambahkan otomatis.
+3. **Environment Variables** (Settings → Environment Variables):
+
+   | Variabel               | Nilai                                                                                 |
+   | ---------------------- | ------------------------------------------------------------------------------------- |
+   | `BOOTH_ACCESS_KEY`     | Kunci acak. **Wajib**: tanpa kunci ini upload foto ditolak di website publik.         |
+   | `CRON_SECRET`          | Rahasia acak untuk cron pembersih foto kedaluwarsa.                                   |
+   | `NEXT_PUBLIC_SITE_URL` | Disarankan: domain produksi, mis. `https://cia-photobooth.vercel.app`.                |
+   | `BLOB_ACCESS`          | Opsional. `private` (default) atau `public`, sesuai akses Blob store.                 |
+
+4. **Redeploy**, lalu di laptop booth buka `https://domain-kamu/?key=KUNCI_BOOTH` **satu kali**. Kunci disimpan di browser itu dan langsung dihapus dari address bar.
+5. Buka panel **Cek perangkat** di halaman kamera: Link QR = `WEBSITE`, Penyimpanan = `VERCEL BLOB`, Kunci booth = `OK`.
+
+Di Vercel, mode QR otomatis `site` dan memakai `NEXT_PUBLIC_SITE_URL` (atau domain yang sedang dibuka). [vercel.json](vercel.json) menjalankan fungsi server di Singapura (`sin1`, terdekat dari Makassar) dan menjadwalkan `/api/cleanup` sekali sehari untuk menghapus foto yang sudah lewat 24 jam.
+
+> Buka booth dan bagikan QR hanya lewat domain produksi. Deployment Preview dan URL deployment panjang (`nama-abc123-akun.vercel.app`) dilindungi login Vercel, jadi tidak bisa dibuka HP pengunjung.
+
+## Konfigurasi QR & Environment
+
+Semua variabel ada di [.env.example](.env.example). Nilai dibaca saat runtime; restart server setelah mengubahnya.
+
+| Variabel                    | Fungsi                                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_DOWNLOAD_MODE` | `local`, `public`, atau `site`. Default: `site` di Vercel, `local` di laptop.                            |
+| `NEXT_PUBLIC_LOCAL_URL`     | Origin laptop yang bisa diakses HP di Wi-Fi yang sama, mis. `http://192.168.1.10:3000`.                  |
+| `NEXT_PUBLIC_PUBLIC_URL`    | Origin HTTPS tunnel (Cloudflare Tunnel, dsb.) ke `http://localhost:3000`, untuk mode `public`.           |
+| `NEXT_PUBLIC_SITE_URL`      | Domain website untuk mode `site`. Kosong = domain yang sedang dibuka. Di Vercel isi domain produksi.     |
+| `BLOB_READ_WRITE_TOKEN`     | Token Vercel Blob (di Vercel juga `BLOB_STORE_ID` + OIDC, otomatis). Kalau ada, foto disimpan di Blob.  |
+| `BLOB_ACCESS`               | `private` (default) atau `public`.                                                                       |
+| `PHOTO_STORAGE`             | Paksa `local` atau `blob`.                                                                               |
+| `BOOTH_ACCESS_KEY`          | Kunci upload; browser booth membuka `/?key=KUNCI` sekali. Wajib di mode `site` (tanpa kunci, upload ditolak). |
+| `CRON_SECRET`               | Rahasia untuk `/api/cleanup` (header `Authorization: Bearer …`).                                         |
+
+**Mode local**: HP dan laptop harus satu Wi-Fi; pastikan firewall mengizinkan port aplikasi dan router tidak memakai client isolation. Jangan memakai `localhost` sebagai alamat QR.
+
+**Mode public**: server memeriksa apakah URL tunnel benar-benar mengarah ke proses booth ini. Kalau tunnel putus, QR baru otomatis memakai alamat Wi-Fi lokal. Lewat tunnel, internet hanya bisa membuka halaman unduhan (dibatasi oleh [src/proxy.js](src/proxy.js)).
+
+**Mode site**: website memang publik, jadi upload foto **wajib** dilindungi `BOOTH_ACCESS_KEY`; tanpa kunci, server menolak upload.
+
+## Alur Penggunaan
+
+```text
+Beranda → Tutorial → Kamera → Pilih Desain + Filter → Scan QR / Cetak → Sesi Berikutnya
+```
+
+1. Pilih jumlah foto (1–6).
+2. Baca tutorial singkat, lalu nyalakan kamera.
+3. Tunjukkan hand sign dan tahan diam sampai bar penuh; hitungan mundur berjalan sendiri.
+4. Pilih desain photocard dan filter dengan pratinjau langsung.
+5. Photocard dibuat dan diunggah otomatis; scan QR dengan kamera HP, atau pilih **Cetak 4R** / **Simpan ke laptop**.
+6. Setelah pengunjung menerima fotonya, tekan **Mulai sesi baru**.
+
+## AI Hand Tracking
+
+- **Web Worker**: MediaPipe GestureRecognizer berjalan di [public/workers/gesture-worker.js](public/workers/gesture-worker.js). Frame kamera dikirim sebagai `ImageBitmap` (tanpa menyalin piksel di main thread), satu frame sekaligus. Kalau worker gagal, sistem otomatis pindah ke main thread.
+- **Hemat CPU**: AI membaca maksimal 2 tangan (cukup untuk pose hati; palm detection, bagian termahal, tidak berjalan terus-menerus), lebar analisis tetap 960 px, ± 22 analisis per detik saat ada tangan dan lebih jarang saat booth kosong.
+- **Pindai & zoom tangan** ([src/lib/handRoi.js](src/lib/handRoi.js)): telapak kecil di frame penuh sering terlewat, jadi saat kosong AI memindai area tengah–kiri–tengah–kanan yang di-zoom (tengah dikunjungi tiap dua langkah). Tangan yang muncul biasanya tertangkap dalam < 0,5 detik; tangan jauh diikuti dengan zoom.
+- **Klasifikasi gabungan** ([src/lib/gestureClassifier.js](src/lib/gestureClassifier.js)): model bawaan MediaPipe + sudut tekuk jari 3D dari `worldLandmarks`, sehingga tetap akurat di berbagai jarak dan rotasi. Telapak terbuka dan kepalan hanya dihitung kalau tangan diangkat, supaya tangan santai di samping badan tidak memicu foto.
+- **Pelacak tangan** ([src/lib/handTracker.js](src/lib/handTracker.js)): ID tetap per tangan, landmark dihaluskan One Euro filter, dan kecepatan gerak diukur untuk syarat "tahan diam".
+- **Penghalusan waktu** ([src/lib/gestureSmoothing.js](src/lib/gestureSmoothing.js)): bukti gestur naik-turun dengan histeresis, jadi kedip deteksi tidak mereset hitungan.
+- **Capture tanpa patah-patah**: frame dibekukan dengan `drawImage`, lalu JPEG di-encode async (`toBlob`); HUD React diperbarui maksimal 5× per detik.
+
+## Desain Photocard
+
+Semua desain otomatis menyesuaikan 1–6 foto dan dikelompokkan di halaman pilih desain.
+
+**Civil In Action**: [src/lib/photocard/designs/civil.js](src/lib/photocard/designs/civil.js), berjudul besar **CIVIL IN ACTION**:
+
+| Desain          | Tema                                                           |
+| --------------- | -------------------------------------------------------------- |
+| Poster          | Hitam-merah, judul besar, pita pembatas proyek.                |
+| Gambar Kerja    | Kertas gambar teknik: zona lembar, garis ukur, kop gambar.     |
+| Site Pass       | Kartu akses area proyek dengan data pemegang dan barcode.      |
+| Proyek Berjalan | Pita "area konstruksi" dan huruf stensil.                      |
+| Struktur Baja   | Balok WF, baut, dan pelat baja di tiap foto.                   |
+| Jembatan        | Rangka jembatan Pratt dan garis bentang.                       |
+| Survey          | Garis kontur, arah utara, dan koordinat tiap titik foto.       |
+| Beton Ekspos    | Dinding beton dengan lubang tie dan stempel QC.                |
+| Photostrip      | Dua strip 2 × 6 inci dalam satu lembar 4R.                     |
+| Sampul          | Sampul majalah teknik sipil.                                   |
+
+**HMS-FT Unismuh Makassar**: [src/lib/photocard/designs/hms.js](src/lib/photocard/designs/hms.js), berlogo resmi HMS dan berwarna logo (biru `#0099CB`, merah `#DA251C`):
+
+| Desain        | Tema                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| HMS Lencana   | Latar biru, lencana HMS besar, judul HMS-FT, pita UNISMUH MAKASSAR, dinding bata. |
+| HMS Pengairan | Kertas gambar: potongan saluran irigasi, muka air, stasiun (STA), data hidrolis. |
+| HMS Strip     | Dua photostrip 2 × 6 inci berkepala biru dan berlogo HMS.                     |
+
+Logo CIA digambar sebagai vektor dari [src/data/brand.js](src/data/brand.js), jadi tajam di ukuran apa pun. Logo HMS-FT berupa PNG transparan 768 × 768 px di `public/logo/hms-ft-unismuh.png`; untuk menggantinya, timpa file itu dengan nama yang sama. Kalau logo gagal dimuat, desain HMS memakai lencana cadangan.
+
+## Cetak 4R
+
+| Parameter     | Nilai                    |
+| ------------- | ------------------------ |
+| Ukuran kertas | 4R / 4 × 6 inci          |
+| Resolusi file | 1200 × 1800 piksel       |
+| Density JPG   | 300 dpi pada kedua sumbu |
+
+**Cetak 4R** membuka dialog cetak browser dengan halaman 4 × 6 inci tanpa margin. Pilih ukuran kertas yang sama di driver printer, matikan header/footer, dan pakai skala 100%. Photostrip menghasilkan dua strip; potong di garis tengah.
+
+## Operasional Booth
+
+Pemeriksaan sebelum acara (server sudah berjalan):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\preflight.ps1
 ```
 
-[scripts/preflight.ps1](scripts/preflight.ps1) memeriksa file penting, aset AI, konfigurasi QR, respons server, dan penggunaan storage. Skrip tidak menghapus foto; folder storage dibuat jika belum tersedia. Untuk port berbeda, tambahkan `-Port 3001` dan sesuaikan URL environment.
+Lengkapi dengan uji manual: kamera, cahaya, suara countdown, satu sesi penuh, scan QR dari HP, dan satu cetakan 4R.
 
-Lengkapi pemeriksaan mesin dengan uji manual:
-
-- Pastikan kamera, pencahayaan, countdown, dan audio berfungsi.
-- Selesaikan satu sesi dari capture sampai editor.
-- Scan QR pada HP: gunakan Wi-Fi booth untuk mode lokal dan data seluler untuk mode publik.
-- Unduh JPG dan cetak sampel 4R menggunakan printer acara.
-- Pastikan sesi berikutnya dapat dimulai tanpa membawa foto pengunjung sebelumnya.
-
-### Pembersihan Foto Kedaluwarsa
-
-Periksa daftar file terlebih dahulu; perintah ini hanya melakukan dry run:
+Pembersihan foto kedaluwarsa di laptop (dry run dulu, lalu `-Delete`):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\cleanup-expired-photos.ps1
-```
-
-Setelah memeriksa daftar dan memastikan tidak ada pengunjung yang masih membutuhkan file tersebut, jalankan penghapusan:
-
-```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\cleanup-expired-photos.ps1 -Delete
 ```
 
-[scripts/cleanup-expired-photos.ps1](scripts/cleanup-expired-photos.ps1) menggunakan batas usia 24 jam secara default. Pembersihan tidak berjalan otomatis; jadwalkan secara terpisah jika diperlukan.
+Di Vercel, pembersihan berjalan otomatis lewat cron harian.
 
 ## Penyimpanan dan Privasi
 
-- Foto sumber disimpan pada IndexedDB browser booth. Membuka editor dari browser atau perangkat lain tidak memindahkan sesi tersebut.
-- JPG hasil komposisi disimpan pada filesystem server, di direktori `storage/photos/`.
-- Link unduhan berlaku selama 24 jam sejak waktu pembuatan file di server. Kedaluwarsa membatasi akses, tetapi tidak otomatis menghapus file dari disk.
-- Siapa pun yang memiliki link aktif dapat mengakses foto. QR bukan mekanisme autentikasi; bagikan hanya kepada pengunjung terkait.
-- Jangan commit foto pengunjung atau konfigurasi environment ke Git. Keduanya sudah dicakup oleh [.gitignore](.gitignore).
-- Dapatkan persetujuan pengunjung dan sesuaikan retensi foto dengan kebijakan acara.
-
-Deployment membutuhkan filesystem yang persisten dan dapat ditulis. Hosting statis atau instance dengan storage sementara tidak cocok tanpa perubahan pada [src/lib/photoServer.js](src/lib/photoServer.js). Jika memakai beberapa instance, storage foto harus dapat diakses oleh instance yang melayani unduhan.
-
-Mode publik menggunakan pembatasan route pada [src/proxy.js](src/proxy.js) untuk origin tunnel yang dikenali. Ini bukan pengganti autentikasi atau konfigurasi jaringan yang aman; jangan mengekspos antarmuka operator melalui port forwarding yang tidak dibatasi.
+- Foto mentah disimpan di IndexedDB browser booth dan dihapus saat **Mulai sesi baru**.
+- Photocard final disimpan di `storage/photos/` (laptop) atau Vercel Blob (deploy), dengan ID acak 20 karakter.
+- Link unduhan berlaku 24 jam sejak dibuat; setelah itu server menolak aksesnya. QR bukan autentikasi: siapa pun yang punya link bisa membuka fotonya.
+- Jangan commit foto pengunjung atau `.env.local`; keduanya sudah ada di [.gitignore](.gitignore).
 
 ## Struktur Proyek
 
 ```text
-teknik-fest-booth/
-  public/
-    logo/                  Aset identitas DTCBooth
-    models/                Model pengenalan gesture
-    mediapipe/wasm/        Aset WASM yang dihasilkan otomatis
-  scripts/                 Preflight, sinkronisasi WASM, dan cleanup foto
-  src/
-    app/                   Halaman, API foto, dan endpoint status QR
-    components/            Antarmuka booth, frame, editor, QR, dan unduhan
-    data/                  Brand, format sesi, dan definisi gesture
-    hooks/                 Capture otomatis dan stream gesture
-    lib/
-      photocard/           Layout, desain, filter, dan ekspor 4R
-      customGestures.js    Pengenalan gesture kustom
-      photoStorage.js     Penyimpanan sesi pada IndexedDB
-      photoServer.js      Penyimpanan dan validasi foto di server
-      shareConfig.js      Pemilihan alamat QR lokal atau publik
-    proxy.js               Pembatasan akses route melalui origin publik
-  storage/photos/          JPG pengunjung, tidak disertakan dalam Git
+docs/
+  TUTORIAL-DEPLOY.md       Tutorial lengkap deploy ke Vercel
+public/
+  logo/cia-logo.jpg        Logo resmi CIA (latar hitam)
+  logo/hms-ft-unismuh.png  Logo HMS-FT Unismuh Makassar (transparan)
+  models/                  Model gesture MediaPipe
+  workers/                 Web Worker AI gestur
+  mediapipe/               WASM + vision_bundle.js (otomatis, tidak di-commit)
+scripts/                   Preflight, salin aset MediaPipe, cleanup foto
+src/
+  app/                     Halaman, API foto, status QR, cleanup
+  components/              Booth, desain, hasil/QR, unduhan, kiosk
+  data/                    Brand (warna + logo vektor), format, gestur
+  hooks/                   Stream gestur & state machine capture
+  lib/
+    gestureEngine.js       Worker AI + cadangan main thread
+    gestureClassifier.js   Klasifikasi gabungan model + geometri 3D
+    handTracker.js         ID tangan, One Euro filter, gerak
+    photocard/             Layout 4R, desain, filter, ekspor
+    photoServer.js         Penyimpanan lokal / Vercel Blob
+    shareConfig.js         Alamat QR (local / public / site)
+  proxy.js                 Pembatasan route lewat tunnel publik
 ```
 
-Bagian utama untuk pengembangan:
-
-- [src/lib/customGestures.js](src/lib/customGestures.js): logika gesture kustom.
-- [src/hooks/useAutoCapture.js](src/hooks/useAutoCapture.js): state capture dan countdown.
-- [src/lib/photocard/layouts.js](src/lib/photocard/layouts.js): ukuran 4R dan susunan slot foto.
-- [src/lib/photocard/designs](src/lib/photocard/designs): implementasi desain photocard.
-- [src/lib/photocard/filters.js](src/lib/photocard/filters.js): filter foto.
-- [src/app/dtc-system.css](src/app/dtc-system.css): token dan komponen visual DTCBooth.
-
-## Pengembangan
-
-| Perintah        | Fungsi                                   |
-| --------------- | ---------------------------------------- |
-| `npm run dev`   | Development server.                      |
-| `npm run build` | Build produksi, termasuk persiapan WASM. |
-| `npm run start` | Menjalankan hasil build produksi.        |
-| `npm run lint`  | Pemeriksaan ESLint.                      |
-
-Sebelum mengajukan perubahan:
-
-```sh
-npm run lint
-npm run build
-```
-
-Untuk perubahan gesture, lakukan pengujian menggunakan webcam dan variasi jarak atau pencahayaan. Untuk perubahan layout, periksa seluruh jumlah foto 1-6 dan pastikan ekspor tetap 1200 x 1800 piksel pada 300 dpi. Lint dan build tidak menggantikan pengujian kamera, akses HP, atau hasil cetak fisik.
+Perintah pengembangan: `npm run dev`, `npm run build`, `npm run start`, `npm run lint`.
 
 ## Troubleshooting
 
-| Gejala                                    | Pemeriksaan                                                                                                    |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Kamera tidak terbuka                      | Gunakan localhost atau HTTPS, izinkan kamera, dan pastikan webcam tidak sedang dipakai aplikasi lain.          |
-| Gesture tidak terdeteksi                  | Pastikan tangan terlihat utuh, pencahayaan cukup, gesture stabil, serta model dan WASM tersedia.               |
-| Model atau WASM gagal dimuat              | Periksa model pada direktori `public/models/`, dependency MediaPipe, dan output skrip saat `dev` atau `build`. |
-| QR lokal tidak terbuka di HP              | Periksa IPv4 laptop, jaringan yang sama, port server, firewall, dan client isolation pada router.              |
-| QR publik beralih ke lokal                | Periksa koneksi internet, URL HTTPS, proses tunnel, dan upstream ke server booth.                              |
-| Editor menampilkan sesi tidak ditemukan   | Gunakan browser dan profil yang mengambil foto; sesi tersimpan di IndexedDB perangkat tersebut.                |
-| Hasil cetak mengecil atau memiliki margin | Periksa ukuran kertas 4 x 6 inci, skala, margin, header/footer, dan dukungan borderless pada driver.           |
-| Foto tidak dapat diunduh                  | Periksa usia link, keberadaan file, dan apakah server serta tunnel masih berjalan.                             |
-| Storage terus bertambah                   | Jalankan dry run cleanup, tinjau daftar, lalu hapus foto kedaluwarsa sesuai kebijakan retensi.                 |
+| Gejala                                  | Pemeriksaan                                                                                         |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Kamera tidak terbuka                    | Pakai localhost atau HTTPS, izinkan kamera, tutup aplikasi lain yang memakai webcam.                |
+| Gesture tidak terbaca                   | Ikuti petunjuk di layar (cahaya, jarak, tepi). Tangan utuh terlihat, telapak menghadap kamera.      |
+| "AI offline"                            | Cek `public/models/` dan `public/mediapipe/` (jalankan `npm run dev`/`build` sekali), atau internet. |
+| QR lokal tidak terbuka di HP            | Cek IPv4 laptop, Wi-Fi yang sama, firewall, dan client isolation router.                            |
+| Upload gagal "Booth belum diaktifkan"   | Buka `/?key=KUNCI` sekali di browser booth (sama dengan `BOOTH_ACCESS_KEY`).                        |
+| Upload gagal di Vercel                  | Pastikan Blob store terhubung (`BLOB_READ_WRITE_TOKEN`) dan `BLOB_ACCESS` sesuai akses store.       |
+| HP diminta login Vercel saat buka QR    | QR memakai URL deployment yang dilindungi. Isi `NEXT_PUBLIC_SITE_URL` dengan domain produksi, deploy ulang. |
+| Editor: sesi tidak ditemukan            | Pakai browser yang sama dengan saat foto diambil; sesi tersimpan di IndexedDB perangkat itu.        |
+| Hasil cetak mengecil / ada margin       | Cek ukuran kertas 4 × 6 inci, skala 100%, margin, header/footer, dan opsi borderless.               |

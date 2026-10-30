@@ -1,131 +1,58 @@
 /** @format */
 
-import DtcHeader from "../components/brand/DtcHeader";
-import DtcLogo from "../components/brand/DtcLogo";
+import Image from "next/image";
+
+import SiteHeader from "../components/brand/SiteHeader";
 import HowItWorks from "../components/landing/HowItWorks";
 import LiveStatus from "../components/landing/LiveStatus";
-import PrintStack from "../components/landing/PrintStack";
 import SessionSetup from "../components/landing/SessionSetup";
 import styles from "../components/landing/landing.module.css";
-import CustomCursor from "../components/motion/CustomCursor";
-import Magnetic from "../components/motion/Magnetic";
+import { BRAND, LOGO } from "../data/brand";
 
 export default function Home() {
   return (
-    <main className={`dtc-page ${styles.page}`} id="top">
-      <a className={styles.skip} href="#session">
-        Langsung pilih format foto
-      </a>
-      <CustomCursor />
-
-      <DtcHeader
-        meta={
-          <>
-            <span>DTC 2026</span>
-            <span>Discovery Technology Creative</span>
-          </>
-        }
-      >
-        <a className={`dtc-meta ${styles.headerLink}`} href="#how">
+    <main className={`cia-page ${styles.page}`}>
+      <SiteHeader>
+        <a className="cia-btn cia-btn--sm cia-btn--ghost" href="#how">
           Cara kerja
         </a>
-        <a className="dtc-btn dtc-btn--sm" href="#session" data-cursor="Mulai">
-          <span>Mulai</span>
-          <span className="dtc-btn__arrow">
-            <i className="dtc-arrow dtc-arrow--down" aria-hidden="true" />
-          </span>
-        </a>
-      </DtcHeader>
+      </SiteHeader>
+      <div className="cia-hazard" />
 
       <section className={styles.hero} aria-labelledby="hero-title">
-        <div className={styles.heroMain}>
-          <h1 id="hero-title" className={styles.heroTitle}>
-            <span className="dtc-reveal">
-              <span className={styles.titleDtc}>DTC</span>
-            </span>
-            <span className="dtc-reveal">
-              <span
-                className={styles.titleBooth}
-                style={{ "--dtc-delay": "110ms" }}
-              >
-                Booth
-              </span>
-            </span>
-          </h1>
-          <p className={`dtc-wide dtc-fade-in ${styles.heroKicker}`}>
-            Capture your moment.
-          </p>
-        </div>
-
-        <div className={`dtc-fade-in ${styles.heroCopy}`}>
-          <p className={styles.heroLead}>
-            Photobooth AI resmi DTC 2026. Berdiri di depan kamera, kasih hand
-            sign, dan kamera motret sendiri. Fotonya langsung dibawa pulang
-            lewat QR.
-          </p>
-          <div className={styles.heroTags}>
-            <span className="dtc-tag">AI photo experience</span>
-            <span className="dtc-tag dtc-tag--accent">Gesture controlled</span>
+        <div className={styles.intro}>
+          <Image
+            src={LOGO.src}
+            alt={LOGO.alt}
+            width={LOGO.width}
+            height={LOGO.height}
+            className={styles.logo}
+            sizes="(max-width: 860px) 160px, 220px"
+            preload
+          />
+          <div className={styles.copy}>
+            <p className="cia-label cia-kicker">Photobooth AI · {BRAND.field}</p>
+            <h1 id="hero-title" className={`cia-display ${styles.title}`}>
+              <span>Civil In</span> <span className="cia-red">Action</span>
+            </h1>
+            <p className={styles.lead}>
+              Pilih jumlah foto, tunjukkan hand sign, dan kamera memotret sendiri.
+              Photocard-nya dibawa pulang lewat QR.
+            </p>
+            <LiveStatus />
           </div>
         </div>
 
-        <div className={`dtc-fade-in ${styles.heroActions}`}>
-          <Magnetic>
-            <a
-              className="dtc-btn dtc-btn--primary dtc-btn--lg"
-              href="#session"
-              data-cursor="Mulai"
-            >
-              <span className="dtc-btn__index">01</span>
-              <span>Mulai photobooth</span>
-              <span className="dtc-btn__arrow">
-                <i className="dtc-arrow dtc-arrow--down" aria-hidden="true" />
-              </span>
-            </a>
-          </Magnetic>
-          <a className={`dtc-link ${styles.heroSecondary}`} href="#how">
-            Lihat cara kerja
-          </a>
-        </div>
-
-        <PrintStack />
-        <p className={`dtc-meta dtc-fade-in ${styles.printsCaption}`}>
-          Fig. 01 / Contoh photocard DTCBooth
-        </p>
-
-        <LiveStatus />
-
-        <a
-          className={styles.scrollCue}
-          href="#how"
-          aria-label="Scroll ke cara kerja"
-        >
-          <span className="dtc-micro">Scroll</span>
-          <i />
-        </a>
+        <SessionSetup />
       </section>
 
       <HowItWorks />
-      <SessionSetup />
 
-      <footer className={`dtc-grid ${styles.footer}`}>
-        <div className={styles.footerLogo}>
-          <DtcLogo plate width="100%" sizes="(max-width: 640px) 60vw, 320px" />
-        </div>
-        <p className={`dtc-h2 ${styles.footerLine}`}>
-          See you <span className="dtc-accent">in frame.</span>
-        </p>
-        <nav className={styles.footerNav} aria-label="Navigasi bawah">
-          <a href="#how">Cara kerja</a>
-          <a href="#session">Mulai sesi</a>
-          <a href="#top">Ke atas</a>
-        </nav>
-        <div className={styles.footerMeta}>
-          <span className="dtc-meta">DTCBooth · AI photobooth</span>
-          <span className="dtc-meta">
-            DTC 2026 · Discovery Technology Creative
-          </span>
-        </div>
+      <footer className={styles.footer}>
+        <span>
+          {BRAND.short} · {BRAND.name}
+        </span>
+        <span>{BRAND.tagline}</span>
       </footer>
     </main>
   );

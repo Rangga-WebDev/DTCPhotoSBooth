@@ -3,14 +3,15 @@
 import Image from "next/image";
 import { cache } from "react";
 
+import { BRAND, LOGO } from "../../data/brand";
 import { CARD_SIZE } from "../../lib/photocard/layouts";
 import { getSharedPhotoInfo, isValidPhotoId } from "../../lib/photoServer";
-import DtcLogo from "../brand/DtcLogo";
+import CiaMark from "../brand/CiaMark";
 import DownloadActions from "./DownloadActions";
 import ExpiryCountdown from "./ExpiryCountdown";
 import styles from "./download.module.css";
 
-// Server component bersama untuk /d/[id] (QR baru) dan /download/[id] (link lama).
+// Server component bersama untuk /d/[id] (QR) dan /download/[id] (link lama).
 const getInfo = cache(getSharedPhotoInfo);
 
 export async function downloadMetadata(id) {
@@ -18,9 +19,9 @@ export async function downloadMetadata(id) {
   return {
     title:
       info.status === "ready"
-        ? "Your photocard · DTCBooth"
-        : "This memory has expired · DTCBooth",
-    description: "Photocard kamu dari DTCBooth, DTC 2026.",
+        ? "Photocard kamu · CIA Photobooth"
+        : "Link kedaluwarsa · CIA Photobooth",
+    description: "Photocard kamu dari CIA Photobooth, Civil In Action.",
     robots: { index: false, follow: false },
     referrer: "no-referrer",
   };
@@ -33,10 +34,7 @@ function formatDate(value) {
     month: "long",
     year: "numeric",
   });
-  const time = date.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const time = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   return `${day}, ${time}`;
 }
 
@@ -50,11 +48,10 @@ function Header({ ready }) {
   return (
     <header className={styles.header}>
       <span className={styles.brand}>
-        <DtcLogo variant="mark" width={34} plate={!ready} decorative />
-        <span className="dtc-wide">DTCBooth</span>
+        <CiaMark width={30} />
+        <span>{BRAND.product}</span>
       </span>
-      <span className="dtc-status" data-state={ready ? "active" : "error"}>
-        <i className="dtc-node" />
+      <span className="cia-status" data-state={ready ? "ok" : "error"}>
         {ready ? "Siap disimpan" : "Link tidak aktif"}
       </span>
     </header>
@@ -64,8 +61,10 @@ function Header({ ready }) {
 function Footer() {
   return (
     <footer className={styles.footer}>
-      <span>DTC 2026 · Discovery Technology Creative</span>
-      <span>Dibuat di DTCBooth</span>
+      <span>
+        {BRAND.short} · {BRAND.name}
+      </span>
+      <span>{BRAND.tagline}</span>
     </footer>
   );
 }
@@ -74,25 +73,22 @@ function Expired({ info, shortId }) {
   const expired = info.status === "expired";
 
   return (
-    <main className={`dtc-page dtc-surface-ink ${styles.page}`}>
+    <main className={`cia-page ${styles.page}`}>
       <Header ready={false} />
+      <div className="cia-hazard" />
       <section className={styles.expired} aria-labelledby="expired-title">
-        <div className={styles.void} aria-hidden="true">
-          <span>{shortId}</span>
-          <span>File unavailable</span>
-        </div>
-        <p className="dtc-meta">Status / {expired ? "Expired" : "Not found"}</p>
-        <h1 id="expired-title" className={styles.expiredTitle}>
-          This memory has <span className="dtc-accent">expired.</span>
+        <p className="cia-label cia-kicker">
+          {expired ? "Kedaluwarsa" : "Tidak ditemukan"} · {shortId}
+        </p>
+        <h1 id="expired-title" className={`cia-display ${styles.title}`}>
+          Link sudah <span className="cia-red">tidak aktif.</span>
         </h1>
         <p className={styles.lead}>
           {expired
-            ? `Photocard ini cuma bisa dibuka selama 24 jam, dan masa aktifnya sudah berakhir ${formatDate(info.expiresAt)}.`
-            : "Link ini sudah tidak aktif, atau alamatnya tidak lengkap. Kalau QR-nya masih ada di layar booth, coba scan ulang."}
+            ? `Photocard ini hanya bisa dibuka selama 24 jam, dan masa aktifnya berakhir ${formatDate(info.expiresAt)}.`
+            : "Link ini sudah tidak aktif atau alamatnya tidak lengkap. Kalau QR-nya masih ada di layar booth, coba scan ulang."}
         </p>
-        <p className={styles.lead}>
-          Masih di lokasi DTC 2026? Mampir lagi ke booth, fotonya bisa diulang.
-        </p>
+        <p className={styles.lead}>Masih di lokasi Civil In Action? Mampir lagi ke booth, fotonya bisa diulang.</p>
       </section>
       <Footer />
     </main>
@@ -103,52 +99,48 @@ export default async function DownloadView({ id }) {
   const info = await getInfo(id);
   const shortId = isValidPhotoId(id) ? id.slice(0, 8).toUpperCase() : "—";
 
-  if (info.status !== "ready") {
-    return <Expired info={info} shortId={shortId} />;
-  }
+  if (info.status !== "ready") return <Expired info={info} shortId={shortId} />;
 
   const imageUrl = `/api/photos/${encodeURIComponent(id)}`;
   const size = info.size ?? CARD_SIZE;
-  const is4R =
-    size.width === CARD_SIZE.width && size.height === CARD_SIZE.height;
   const until = formatDate(info.expiresAt);
 
   return (
-    <main className={`dtc-page ${styles.page}`}>
+    <main className={`cia-page ${styles.page}`}>
       <Header ready />
+      <div className="cia-hazard" />
 
       <section className={styles.hero} aria-labelledby="download-title">
-        <p className="dtc-meta">[ DTC 2026 ] / Photocard {shortId}</p>
-        <h1 id="download-title" className={styles.title}>
-          Your <span className="dtc-accent">photocard.</span>
-        </h1>
-        <p className={styles.lead}>
-          Simpan sekarang, ya. Link ini aktif sampai {until}.
-        </p>
+        <Image
+          src={LOGO.src}
+          alt={LOGO.alt}
+          width={LOGO.width}
+          height={LOGO.height}
+          className={styles.logo}
+          sizes="88px"
+          loading="eager"
+        />
+        <div>
+          <p className="cia-label">Photocard {shortId}</p>
+          <h1 id="download-title" className={`cia-display ${styles.title}`}>
+            Photocard <span className="cia-red">kamu.</span>
+          </h1>
+          <p className={styles.lead}>Simpan sekarang, ya. Link aktif sampai {until}.</p>
+        </div>
       </section>
 
       <div className={styles.layout}>
-        <figure className={`dtc-surface-ink ${styles.tray}`}>
-          <div className={styles.print}>
-            <Image
-              src={imageUrl}
-              alt={`Photocard DTCBooth ${shortId}`}
-              width={size.width}
-              height={size.height}
-              unoptimized
-              loading="eager"
-              fetchPriority="high"
-              className={styles.image}
-            />
-          </div>
-          <figcaption className={styles.caption}>
-            <span>Photo ID {shortId}</span>
-            <span>
-              {info.size
-                ? `${is4R ? `${CARD_SIZE.name} · ` : ""}${size.width} × ${size.height} px`
-                : "JPG"}
-            </span>
-          </figcaption>
+        <figure className={styles.tray}>
+          <Image
+            src={imageUrl}
+            alt={`Photocard CIA Photobooth ${shortId}`}
+            width={size.width}
+            height={size.height}
+            unoptimized
+            loading="eager"
+            fetchPriority="high"
+            className={styles.image}
+          />
         </figure>
 
         <DownloadActions
@@ -166,7 +158,10 @@ export default async function DownloadView({ id }) {
             </div>
             <div>
               <dt>File</dt>
-              <dd>JPG · {formatBytes(info.bytes)}</dd>
+              <dd>
+                JPG · {formatBytes(info.bytes)}
+                {info.size ? ` · ${info.size.width} × ${info.size.height} px` : ""}
+              </dd>
             </div>
             <div>
               <dt>Dibuat</dt>
@@ -179,10 +174,9 @@ export default async function DownloadView({ id }) {
               </dd>
             </div>
           </dl>
-
           <p className={styles.privacy}>
-            Link ini pribadi. Siapa pun yang punya link bisa membuka photocard
-            ini sampai {until}, jadi bagikan ke orang yang kamu percaya saja.
+            Link ini pribadi. Siapa pun yang punya link bisa membuka photocard ini sampai {until},
+            jadi bagikan ke orang yang kamu percaya saja.
           </p>
         </div>
       </div>

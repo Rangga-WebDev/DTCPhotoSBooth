@@ -1,6 +1,6 @@
 /**
- * DTCBOOTH — PHOTO STORAGE
- *   Menggunakan IndexedDB.
+ * CIA PHOTOBOOTH — PHOTO STORAGE
+ *   Sesi foto mentah disimpan di IndexedDB browser booth.
  *
  * @format
  */
@@ -37,34 +37,28 @@ export function openPhotoDB() {
   });
 }
 
-// Konversi foto Base64 menjadi Blob
-async function dataUrlToBlob(dataUrl) {
-  const response = await fetch(dataUrl);
+// Foto dari kamera sudah berupa Blob; data URL lama tetap diterima.
+async function toBlob(photo) {
+  if (photo instanceof Blob) return photo;
+  const response = await fetch(photo);
   return await response.blob();
 }
 
 // Menyimpan satu sesi photobooth
-export async function savePhotoSession({
-  photos,
-  themeId,
-  photoCount,
-  sessionNumber,
-}) {
+export async function savePhotoSession({ photos, photoCount, sessionNumber }) {
   if (!Array.isArray(photos) || photos.length < 1 || photos.length > 6) {
     throw new Error("Jumlah foto tidak valid.");
   }
 
+  const photoBlobs = await Promise.all(photos.map(toBlob));
   const db = await openPhotoDB();
 
   try {
-    const photoBlobs = await Promise.all(photos.map(dataUrlToBlob));
-
     const sessionId = crypto.randomUUID();
 
     const session = {
       id: sessionId,
       photos: photoBlobs,
-      themeId,
       photoCount,
       sessionNumber,
       createdAt: Date.now(),
