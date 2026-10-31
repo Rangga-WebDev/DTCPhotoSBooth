@@ -202,7 +202,7 @@ Di Vercel, pembersihan berjalan otomatis lewat cron harian.
 
 ## Penyimpanan dan Privasi
 
-- Foto mentah disimpan di IndexedDB browser booth dan dihapus saat **Mulai sesi baru**.
+- Foto mentah disimpan di IndexedDB browser booth (plus salinan di memori tab) dan dihapus saat **Mulai sesi baru**; sesi yang ditinggal dihapus otomatis setelah 6 jam. Kalau penyimpanan browser gagal (mis. disk hampir penuh), sesi tetap jalan dari memori tab, asal halaman tidak di-reload.
 - Photocard final disimpan di `storage/photos/` (laptop) atau Vercel Blob (deploy), dengan ID acak 20 karakter.
 - Link unduhan berlaku 24 jam sejak dibuat; setelah itu server menolak aksesnya. QR bukan autentikasi: siapa pun yang punya link bisa membuka fotonya.
 - Jangan commit foto pengunjung atau `.env.local`; keduanya sudah ada di [.gitignore](.gitignore).
