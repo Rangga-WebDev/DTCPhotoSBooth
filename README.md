@@ -80,7 +80,7 @@ Aset AI (model `public/models/gesture_recognizer.task`, WASM, dan `vision_bundle
 Dengan deploy, booth cukup membuka domain website di Chrome laptop (HTTPS, kamera langsung jalan), dan QR bisa dibuka pengunjung dari mana saja memakai data seluler. Ringkasnya:
 
 1. Gabungkan kode ke branch **`main`** (Vercel men-deploy Production dari `main`), lalu **import** repo di [vercel.com/new](https://vercel.com/new). Framework terdeteksi otomatis sebagai Next.js; build command tidak perlu diubah.
-2. **Buat Blob store**: tab **Storage** → **Blob**, region **Singapore**, akses **Private**, lalu **Connect to Project**. Kredensial Blob (`BLOB_STORE_ID` untuk OIDC dan `BLOB_READ_WRITE_TOKEN`) ditambahkan otomatis.
+2. **Buat Blob store**: tab **Storage** → **Blob**, region **Singapore**, akses **Private**, lalu **Connect to Project**. Vercel otomatis menambahkan `BLOB_STORE_ID` (autentikasi OIDC); tidak ada token yang perlu disalin.
 3. **Environment Variables** (Settings → Environment Variables):
 
    | Variabel               | Nilai                                                                                 |
@@ -202,7 +202,7 @@ Di Vercel, pembersihan berjalan otomatis lewat cron harian.
 
 ## Penyimpanan dan Privasi
 
-- Foto mentah disimpan di IndexedDB browser booth dan dihapus saat **Mulai sesi baru**.
+- Foto mentah disimpan di IndexedDB browser booth (plus salinan di memori tab) dan dihapus saat **Mulai sesi baru**; sesi yang ditinggal dihapus otomatis setelah 6 jam. Kalau penyimpanan browser gagal (mis. disk hampir penuh), sesi tetap jalan dari memori tab, asal halaman tidak di-reload.
 - Photocard final disimpan di `storage/photos/` (laptop) atau Vercel Blob (deploy), dengan ID acak 20 karakter.
 - Link unduhan berlaku 24 jam sejak dibuat; setelah itu server menolak aksesnya. QR bukan autentikasi: siapa pun yang punya link bisa membuka fotonya.
 - Jangan commit foto pengunjung atau `.env.local`; keduanya sudah ada di [.gitignore](.gitignore).
@@ -245,7 +245,7 @@ Perintah pengembangan: `npm run dev`, `npm run build`, `npm run start`, `npm run
 | "AI offline"                            | Cek `public/models/` dan `public/mediapipe/` (jalankan `npm run dev`/`build` sekali), atau internet. |
 | QR lokal tidak terbuka di HP            | Cek IPv4 laptop, Wi-Fi yang sama, firewall, dan client isolation router.                            |
 | Upload gagal "Booth belum diaktifkan"   | Buka `/?key=KUNCI` sekali di browser booth (sama dengan `BOOTH_ACCESS_KEY`).                        |
-| Upload gagal di Vercel                  | Pastikan Blob store terhubung (`BLOB_READ_WRITE_TOKEN`) dan `BLOB_ACCESS` sesuai akses store.       |
+| Upload gagal di Vercel                  | Pastikan Blob store terhubung (`BLOB_STORE_ID` ada di Environment Variables), sudah deploy ulang, dan `BLOB_ACCESS` sesuai akses store. |
 | HP diminta login Vercel saat buka QR    | QR memakai URL deployment yang dilindungi. Isi `NEXT_PUBLIC_SITE_URL` dengan domain produksi, deploy ulang. |
 | Editor: sesi tidak ditemukan            | Pakai browser yang sama dengan saat foto diambil; sesi tersimpan di IndexedDB perangkat itu.        |
 | Hasil cetak mengecil / ada margin       | Cek ukuran kertas 4 × 6 inci, skala 100%, margin, header/footer, dan opsi borderless.               |
